@@ -29,6 +29,7 @@ namespace Example
 
 	private:
 
+		/// UI
 		void RenderUI();
 
 
@@ -46,6 +47,5 @@ namespace Example
 
 		Matrix4D* view;
 		Matrix4D perspectiveProjection;
-
 	};
 }
