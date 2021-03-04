@@ -2,7 +2,7 @@
 #include "config.h"
 #include "exampleapp.h"
 #include <cstring>
-#include "Matrix4D.h"
+#include "math.h"
 
 class Camera
 {
@@ -35,7 +35,7 @@ public:
 	}
 	inline void getCamera()
 	{
-		printf("Camera pos = %f:%f:%f \nCamera dir = %f:%f:%f\n", cameraPos.getX(), cameraPos.getY(), cameraPos.getZ(), cameraFront.getX(), cameraFront.getY(), cameraFront.getZ());
+		printf("Camera pos = %f:%f:%f \nCamera dir = %f:%f:%f\n", cameraPos[0], cameraPos[1], cameraPos[2], cameraFront[0], cameraFront[1], cameraFront[2]);
 	}
 
 private:
@@ -96,7 +96,7 @@ inline Matrix4D Camera::run()
 	cameraRight = Vector4D::cross(up, cameraDirection);
 	cameraUp = Vector4D::cross(cameraDirection, cameraRight);
 
-	view = Matrix4D::lookAt(cameraPos, cameraTarget, cameraUp);
+	view = Matrix4D::LookAt(cameraPos, cameraTarget, cameraUp);
 	return perspectiveProjection * view;
 
 }

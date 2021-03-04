@@ -424,7 +424,7 @@ public:
 		return cord;
 	}
 
-	inline void Print() const
+	inline void print() const
 	{
 		printf("%0.1f : %0.1f : %0.1f : %0.1f\n", cord[0], cord[1], cord[2], cord[3]);
 	}
@@ -432,6 +432,11 @@ public:
 	float length() const
 	{
 		return sqrt((cord[0] * cord[0]) + (cord[1] * cord[1]) + (cord[2] * cord[2]));
+	}
+	static Vector4D normalize(Vector4D vec)
+	{
+		float len = 1.0f / vec.length();
+		return Vector4D(vec[0] * len, vec[1] * len, vec[2] * len, 1.0f);
 	}
 	Vector4D normalize()
 	{
@@ -530,7 +535,10 @@ public:
 
 	/// Deconstructor
 	//====================================================================================================
-	~Matrix4D();
+	~Matrix4D()
+	{
+
+	}
 
 	/// Functions
 	//====================================================================================================
@@ -597,6 +605,7 @@ public:
 		returnMatrix[4] = mat[1];	returnMatrix[5] = mat[5];	returnMatrix[6] = mat[9];	returnMatrix[7] = mat[13];
 		returnMatrix[8] = mat[2];	returnMatrix[9] = mat[6];	returnMatrix[10] = mat[10]; returnMatrix[11] = mat[14];
 		returnMatrix[12] = mat[3];	returnMatrix[13] = mat[7];	returnMatrix[14] = mat[11];	returnMatrix[15] = mat[15];
+		return Matrix4D(returnMatrix);
 	}
 	static Matrix4D inverse(const Matrix4D& mat)
 	{
@@ -740,13 +749,27 @@ public:
 	{
 		Vector4D front = target - position;
 		Vector4D right = Vector4D::cross(front, up.normalize()).normalize();
-		Vector4D up = Vector4D::cross(right, front);
+		Vector4D i_up = Vector4D::cross(right, front);
 
 		return Matrix4D(right[0],	right[1],	right[2],  -Vector4D::dot(right, position),
 						up[0],		up[1],		up[2],	   -Vector4D::dot(up, position),
 						front[0],	front[1],	front[2],	Vector4D::dot(front, position),
 						0,			0,			0,			1);
 	}
+	static Matrix4D perspective(float fieldOfView, float aspectRatio, float nearClip, float farClip)
+	{
+		Matrix4D result;
+
+		result = Matrix4D(
+			1.0f / (aspectRatio * tan(fieldOfView / 2)), 0, 0, 0,
+			0, 1.0f / (tan(fieldOfView / 2)), 0, 0,
+			0, 0, ((-nearClip - farClip) / (nearClip - farClip)), -1,
+			0, 0, ((2 * farClip * nearClip) / (farClip - nearClip)), 0
+		);
+
+		return result;
+	}
+
 
 	/// Operators
 	//====================================================================================================
