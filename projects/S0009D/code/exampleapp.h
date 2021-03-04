@@ -8,32 +8,44 @@
 //------------------------------------------------------------------------------
 #include "core/app.h"
 #include "render/window.h"
-
-#include <iostream>
-#include <vector>
-#include <map>
-
+#include "Camera.h"
+#include <chrono>
 
 namespace Example
 {
-class ExampleApp : public Core::App
-{
-public:
-	/// constructor
-	ExampleApp();
-	/// destructor
-	~ExampleApp();
+	class ExampleApp : public Core::App
+	{
+	public:
 
-	/// open app
-	bool Open();
-	/// run app
-	void Run();
-private:
+		/// constructor
+		ExampleApp();
+		/// destructor
+		~ExampleApp();
 
-	GLuint program;
-	GLuint vertexShader;
-	GLuint pixelShader;
-	GLuint triangle;
-	Display::Window* window;
-};
-} // namespace Example
+		/// open app
+		bool Open();
+		/// run app
+		void Run();
+
+	private:
+
+		void RenderUI();
+
+
+		bool closeApp = false;
+
+		std::chrono::high_resolution_clock clock = std::chrono::high_resolution_clock();
+		using ms = std::chrono::duration<float, std::milli>;
+
+		Display::Window* window;
+
+		Camera camera;
+
+		bool useImGui = false;
+		int test = 0;
+
+		Matrix4D* view;
+		Matrix4D perspectiveProjection;
+
+	};
+}
