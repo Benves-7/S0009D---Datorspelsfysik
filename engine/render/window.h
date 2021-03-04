@@ -59,11 +59,6 @@ public:
 	void SetUiRender(const std::function<void()>& func);
 	/// set optional nanovg render function
 	void SetNanoVGRender(const std::function<void(NVGcontext *)> & func);
-	/// return window pointer
-	GLFWwindow* GetWindow()
-	{
-		return window;
-	}
 
 private:
 
