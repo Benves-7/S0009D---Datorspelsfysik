@@ -5,6 +5,9 @@
 #include <sstream>
 #include <vector>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include "core/app.h"
 
 
@@ -192,9 +195,8 @@ public:
 
 private:
 
-	Vector4D position, color;
+	Vector4D position;
 	Vector2D dimentions;
-
 };
 
 class DebugLine : public DebugBase
@@ -218,7 +220,6 @@ public:
 
 		setup();
 	}
-
 	~DebugLine()
 	{
 
@@ -246,7 +247,6 @@ public:
 private:
 
 	Vector4D point1, point2;
-
 };
 
 class DebugCube : public DebugBase
@@ -319,5 +319,72 @@ public:
 private:
 
 	Vector4D position, dimentions;
+};
 
+class DebugSphere : public DebugBase
+{
+public:
+	DebugSphere(Vector4D pos, float rad, Vector4D col = Vector4D(100, 40, 150))
+	{
+		position = pos;
+		radius = rad;
+		color = col;
+
+		int rings = 30;
+		int sectors = 200;
+
+		float const R = 1.0 / (float)(rings);
+		float const S = 1.0 / (float)(sectors);
+		int r, s;
+
+		vertices.resize(rings * sectors * 3);
+		indices.resize(rings * sectors * 4);
+		vector<GLfloat>::iterator v = vertices.begin();
+		vector<GLint>::iterator i = indices.begin();
+		for (r = 0; r < rings; r++) for (s = 0; s < sectors; s++)
+		{
+			float const y = sin(-M_PI_2 + M_PI * r * R);
+			float const x = cos(2 * M_PI * s * S) * sin(M_PI * r * R);
+			float const z = sin(2 * M_PI * s * S) * sin(M_PI * r * R);
+
+			*v++ = x * radius;
+			*v++ = y * radius;
+			*v++ = z * radius;
+
+			*i++ = r * sectors + s;
+			*i++ = r * sectors + (s + 1);
+			*i++ = (r + 1) * sectors + (s + 1);
+			*i++ = (r + 1) * sectors + s;
+		}
+
+		setup();
+	}
+	~DebugSphere()
+	{
+
+	}
+
+	void draw(Matrix4D viewMatrix)
+	{
+		glUseProgram(program);
+
+		unsigned int location = glGetUniformLocation(program, "view");
+		glUniformMatrix4fv(location, 1, GL_TRUE, viewMatrix.getPointer());
+
+		location = glGetUniformLocation(program, "model");
+		glUniformMatrix4fv(location, 1, GL_TRUE, Matrix4D::getPositionMatrix(position).getPointer());
+
+		location = glGetUniformLocation(program, "color");
+		glUniform4fv(location, 1, color.GetPointer());
+
+		glBindVertexArray(VAO);
+		glDrawElements(GL_QUADS, indices.size(), GL_UNSIGNED_INT, NULL);
+		glBindVertexArray(0);
+		glUseProgram(0);
+	}
+
+private:
+
+	Vector4D position;
+	float radius;
 };

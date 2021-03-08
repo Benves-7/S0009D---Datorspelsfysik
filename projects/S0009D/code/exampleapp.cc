@@ -164,7 +164,8 @@ namespace Example
 				0, 0, -1, 0
 			);
 
-			debugManager.createSquare(Vector4D(0, 0, -5), Vector2D(5, 5));
+			//debugManager.createSquare(Vector4D(0, 0, -5), Vector2D(5, 5));
+			debugManager.createSphere(Vector4D(0, 0, -2), 1.5f);
 
 			this->window->SetUiRender([this]()
 				{
@@ -198,8 +199,6 @@ namespace Example
 
 	void ExampleApp::Run()
 	{
-		auto start = clock.now();
-
 		while (this->window->IsOpen() && true)
 		{
 			this->window->Update();

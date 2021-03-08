@@ -67,17 +67,21 @@ public:
 	{
 		viewMatrix = view;
 	}
-	void createLine(Vector4D p1, Vector4D p2, Vector4D color = Vector4D(255, 0, 0, 1))
+	void createLine(Vector4D p1, Vector4D p2, Vector4D color = Vector4D(255, 0, 0))
 	{
 		addShape(new DebugLine(p1, p2, color));
 	}
-	void createSquare(Vector4D pos, Vector2D dim, Vector4D color = Vector4D(20, 10, 40, 1))
+	void createSquare(Vector4D pos, Vector2D dim, Vector4D color = Vector4D(20, 10, 40))
 	{
 		addSafeShape(new DebugSquare(pos, dim, color));
 	}
-	void createCube(Vector4D pos, Vector4D dim, Vector4D color = Vector4D(10, 30, 30, 1))
+	void createCube(Vector4D pos, Vector4D dim, Vector4D color = Vector4D(10, 30, 30))
 	{
 		addSafeShape(new DebugCube(pos, dim, color));
+	}
+	void createSphere(Vector4D pos, float radius, Vector4D color = Vector4D(50, 20, 20))
+	{
+		addSafeShape(new DebugSphere(pos, radius, color));
 	}
 
 
