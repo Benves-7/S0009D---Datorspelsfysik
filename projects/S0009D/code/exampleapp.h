@@ -9,7 +9,11 @@
 #include "core/app.h"
 #include "render/window.h"
 #include "Camera.h"
+#include "debug/debugManager.h"
+#include "Ray.h"
 #include <chrono>
+#include <vector>
+
 
 namespace Example
 {
@@ -32,8 +36,11 @@ namespace Example
 		/// UI
 		void RenderUI();
 
+		Vector2D mousePos;
 
 		bool closeApp = false;
+
+		std::vector<DebugBase*> shapes;
 
 		std::chrono::high_resolution_clock clock = std::chrono::high_resolution_clock();
 		using ms = std::chrono::duration<float, std::milli>;
@@ -45,7 +52,8 @@ namespace Example
 		bool useImGui = false;
 		int test = 0;
 
-		Matrix4D* view;
 		Matrix4D perspectiveProjection;
+
+		DebugManager debugManager;
 	};
 }

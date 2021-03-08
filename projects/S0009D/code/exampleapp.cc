@@ -14,6 +14,8 @@
 using namespace Display;
 namespace Example
 {
+	Matrix4D lookAt;
+
 	Vector4D cameraPos = Vector4D(-1.0f, 0.0f, 5.0f, 1);
 	Vector4D cameraFront = Vector4D(0.0f, 0.0f, -1.0f, 1);
 	Vector4D cameraUp = Vector4D(0.0f, 1.0f, 0.0f, 1);
@@ -45,18 +47,36 @@ namespace Example
 
 		window->SetMousePressFunction([this](int32 button, int32 action, int32 mods)
 			{
-				if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+				if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 				{
 					click = true;
 				}
-				else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+				else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
 				{
 					click = false;
 					isHeldDown = false;
 				}
+				if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+				{
+					// Shoot ray
+					int width, height;
+					window->GetSize(width, height);
+					Vector4D nds = Vector4D((mousePos[0] * 2.0f) / width - 1.0f, 1.0f - (2.0f * mousePos[1]) / height, 1, 1);
+					Vector4D clip = Vector4D(nds[0], nds[1], -1.0f, 1.0f);
+					Vector4D eye = Matrix4D::inverse(perspectiveProjection) * clip;
+					eye = Vector4D(eye[0], eye[1], -1.0f, 0.0f);
+					Vector4D world = Matrix4D::inverse(lookAt) * eye;
+					world.normalize();
+
+					Ray ray = Ray(cameraPos, world);
+					debugManager.createLine(ray.getOrigin(), ray.getPointOnRay(100));
+					
+				}
+
 			});
 		window->SetMouseMoveFunction([this](float64 xPos, float64 yPos)
 			{
+				mousePos.Set(xPos, yPos);
 				if (click)
 				{
 					if (!isHeldDown)
@@ -127,10 +147,24 @@ namespace Example
 		{
 			// set clear color to gray
 			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+			glEnable(GL_DEPTH_TEST);
 
-			this->window->GetSize(windowSizeX, windowSizeY);
+			//Perspective projection
+			const float n = 0.1f;
+			const float f = 100000.0f;
+			const float l = -0.1f;
+			const float r = 0.1f;
+			const float t = 0.1f;
+			const float b = -0.1f;
 
-			perspectiveProjection = Matrix4D::perspective(nvgDegToRad(fov), (float)windowSizeX / (float)windowSizeY, 1000, 0.1);
+			perspectiveProjection = Matrix4D(
+				(2 * n) / (r - l), 0, ((r + l) / (r - l)), 0,
+				0, (2 * n) / (t - b), ((t + b) / (t - b)), 0,
+				0, 0, -((f + n) / (f - n)), -((2 * f * n) / (f - n)),
+				0, 0, -1, 0
+			);
+
+			debugManager.createSquare(Vector4D(0, 0, -5), Vector2D(5, 5));
 
 			this->window->SetUiRender([this]()
 				{
@@ -150,11 +184,13 @@ namespace Example
 			ImGui::SetNextWindowSize(ImVec2(200, 400));
 			ImGui::Begin("test UI", &show);
 
-			if (ImGui::Button("Count"))
+			if (ImGui::Button("Clear"))
 			{
-				test += 1;
+				debugManager.clear();
 			}
-			ImGui::Text("count is: %i", test);
+			ImGui::Text("debugshapes # %i", debugManager.debugShapes.size());
+			ImGui::Text("savedshapes # %i", debugManager.savedShapes.size());
+			ImGui::Checkbox("render", debugManager.bRender());
 
 			ImGui::End();
 		}
@@ -166,19 +202,14 @@ namespace Example
 
 		while (this->window->IsOpen() && true)
 		{
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			this->window->Update();
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			glUseProgram(0);
-			glMatrixMode(GL_MODELVIEW);
-			Matrix4D view = Matrix4D::LookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-			auto viewMat = Matrix4D::transpose(view);
-			glLoadMatrixf((GLfloat*)&viewMat);
-			glMatrixMode(GL_PROJECTION);
-			auto dood = (perspectiveProjection);
-			glLoadMatrixf((GLfloat*)&dood);
+			lookAt = Matrix4D::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+			Matrix4D view = perspectiveProjection * lookAt;
+			debugManager.setViewMatrix(view);
 
-			float runtime = std::chrono::duration_cast<ms>(clock.now() - start).count();
+			debugManager.drawDebugShapes();
 
 			this->window->SwapBuffers();
 			if (closeApp)
