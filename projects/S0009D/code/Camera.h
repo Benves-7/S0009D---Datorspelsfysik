@@ -96,7 +96,7 @@ inline Matrix4D Camera::run()
 	cameraRight = Vector4D::cross(up, cameraDirection);
 	cameraUp = Vector4D::cross(cameraDirection, cameraRight);
 
-	view = Matrix4D::LookAt(cameraPos, cameraTarget, cameraUp);
+	view = Matrix4D::lookAt(cameraPos, cameraTarget, cameraUp);
 	return perspectiveProjection * view;
 
 }
