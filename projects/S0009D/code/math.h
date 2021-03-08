@@ -438,10 +438,13 @@ public:
 		float len = 1.0f / vec.length();
 		return Vector4D(vec[0] * len, vec[1] * len, vec[2] * len, 1.0f);
 	}
-	Vector4D normalize()
+	void normalize()
 	{
 		float len = 1.0f / length();
-		return Vector4D(cord[0] * len, cord[1] * len, cord[2] * len, 1.0f);
+		cord[0] *= len;
+		cord[1] *= len;
+		cord[2] *= len;
+		cord[3] = 1.0f;
 	}
 
 	static float dot(const Vector4D a, const Vector4D& b)
@@ -586,14 +589,14 @@ public:
 	}
 	static Matrix4D rotVec(Vector4D& vec, float degree)
 	{
-		Vector4D nv = vec.normalize();
+		Vector4D nv = Vector4D::normalize(vec);
 		Matrix4D C(	0,    -nv[2], nv[1], 0,
 					nv[2], 0,    -nv[0], 0,
 				   -nv[1], nv[0], 0,	 0,
 					0,	   0,	  0,	 1 );
 		Matrix4D I;
 		Matrix4D rotMat = I + (C * sin(degree)) + (C * C) * (1 - cos(degree));
-		rotMat.matrix[15] = 1;
+		rotMat[15] = 1;
 
 		return rotMat;
 	}
@@ -611,125 +614,128 @@ public:
 	{
 		float inv[16], determinant, out[16];
 
-		inv[0] =	mat[5]  * mat[10] * mat[15] -
-					mat[5]  * mat[11] * mat[14] -
-					mat[9]  * mat[6]  * mat[15] +
-					mat[9]  * mat[7]  * mat[14] +
-					mat[13] * mat[6]  * mat[11] -
-					mat[13] * mat[7]  * mat[10];
+		inv[0] = mat[5] * mat[10] * mat[15] -
+			mat[5] * mat[11] * mat[14] -
+			mat[9] * mat[6] * mat[15] +
+			mat[9] * mat[7] * mat[14] +
+			mat[13] * mat[6] * mat[11] -
+			mat[13] * mat[7] * mat[10];
 
-		inv[1] =   -mat[1]  * mat[10] * mat[15] +
-					mat[1]  * mat[11] * mat[14] +
-					mat[9]  * mat[2]  * mat[15] -
-					mat[9]  * mat[3]  * mat[14] -
-					mat[13] * mat[2]  * mat[11] +
-					mat[13] * mat[3]  * mat[10];
+		inv[4] = -mat[4] * mat[10] * mat[15] +
+			mat[4] * mat[11] * mat[14] +
+			mat[8] * mat[6] * mat[15] -
+			mat[8] * mat[7] * mat[14] -
+			mat[12] * mat[6] * mat[11] +
+			mat[12] * mat[7] * mat[10];
 
-		inv[2] =	mat[1]  * mat[6]  * mat[15] -
-					mat[1]  * mat[7]  * mat[14] -
-					mat[5]  * mat[2]  * mat[15] +
-					mat[5]  * mat[3]  * mat[14] +
-					mat[13] * mat[2]  * mat[7]  -
-					mat[13] * mat[3]  * mat[6];
+		inv[8] = mat[4] * mat[9] * mat[15] -
+			mat[4] * mat[11] * mat[13] -
+			mat[8] * mat[5] * mat[15] +
+			mat[8] * mat[7] * mat[13] +
+			mat[12] * mat[5] * mat[11] -
+			mat[12] * mat[7] * mat[9];
 
-		inv[3] =   -mat[1]  * mat[6]  * mat[11] +
-					mat[1]  * mat[7]  * mat[10] +
-					mat[5]  * mat[2]  * mat[11] -
-					mat[5]  * mat[3]  * mat[10] -
-					mat[9]  * mat[2]  * mat[7]  +
-					mat[9]  * mat[3]  * mat[6];
+		inv[12] = -mat[4] * mat[9] * mat[14] +
+			mat[4] * mat[10] * mat[13] +
+			mat[8] * mat[5] * mat[14] -
+			mat[8] * mat[6] * mat[13] -
+			mat[12] * mat[5] * mat[10] +
+			mat[12] * mat[6] * mat[9];
 
-		inv[4] =   -mat[4]  * mat[10] * mat[15] +
-					mat[4]  * mat[11] * mat[14] +
-					mat[8]  * mat[6]  * mat[15] -
-					mat[8]  * mat[7]  * mat[14] -
-					mat[12] * mat[6]  * mat[11] +
-					mat[12] * mat[7]  * mat[10];
+		inv[1] = -mat[1] * mat[10] * mat[15] +
+			mat[1] * mat[11] * mat[14] +
+			mat[9] * mat[2] * mat[15] -
+			mat[9] * mat[3] * mat[14] -
+			mat[13] * mat[2] * mat[11] +
+			mat[13] * mat[3] * mat[10];
 
-		inv[5] =	mat[0]  * mat[10] * mat[15] -
-					mat[0]  * mat[11] * mat[14] -
-					mat[8]  * mat[2]  * mat[15] +
-					mat[8]  * mat[3]  * mat[14] +
-					mat[12] * mat[2]  * mat[11] -
-					mat[12] * mat[3]  * mat[10];
+		inv[5] = mat[0] * mat[10] * mat[15] -
+			mat[0] * mat[11] * mat[14] -
+			mat[8] * mat[2] * mat[15] +
+			mat[8] * mat[3] * mat[14] +
+			mat[12] * mat[2] * mat[11] -
+			mat[12] * mat[3] * mat[10];
 
-		inv[6] =   -mat[0]  * mat[6]  * mat[15] +
-					mat[0]  * mat[7]  * mat[14] +
-					mat[4]  * mat[2]  * mat[15] -
-					mat[4]  * mat[3]  * mat[14] -
-					mat[12] * mat[2]  * mat[7]  +
-					mat[12] * mat[3]  * mat[6];
+		inv[9] = -mat[0] * mat[9] * mat[15] +
+			mat[0] * mat[11] * mat[13] +
+			mat[8] * mat[1] * mat[15] -
+			mat[8] * mat[3] * mat[13] -
+			mat[12] * mat[1] * mat[11] +
+			mat[12] * mat[3] * mat[9];
 
-		inv[7] =	mat[0]  * mat[6]  * mat[11] -
-					mat[0]  * mat[7]  * mat[10] -
-					mat[4]  * mat[2]  * mat[11] +
-					mat[4]  * mat[3]  * mat[10] +
-					mat[8]  * mat[2]  * mat[7]  -
-					mat[8]  * mat[3]  * mat[6];
+		inv[13] = mat[0] * mat[9] * mat[14] -
+			mat[0] * mat[10] * mat[13] -
+			mat[8] * mat[1] * mat[14] +
+			mat[8] * mat[2] * mat[13] +
+			mat[12] * mat[1] * mat[10] -
+			mat[12] * mat[2] * mat[9];
 
-		inv[8] =	mat[4]  * mat[9]  * mat[15] -
-					mat[4]  * mat[11] * mat[13] -
-					mat[8]  * mat[5]  * mat[15] +
-					mat[8]  * mat[7]  * mat[13] +
-					mat[12] * mat[5]  * mat[11] -
-					mat[12] * mat[7]  * mat[9];
+		inv[2] = mat[1] * mat[6] * mat[15] -
+			mat[1] * mat[7] * mat[14] -
+			mat[5] * mat[2] * mat[15] +
+			mat[5] * mat[3] * mat[14] +
+			mat[13] * mat[2] * mat[7] -
+			mat[13] * mat[3] * mat[6];
 
-		inv[9] =   -mat[0]  * mat[9]  * mat[15] +
-					mat[0]  * mat[11] * mat[13] +
-					mat[8]  * mat[1]  * mat[15] -
-					mat[8]  * mat[3]  * mat[13] -
-					mat[12] * mat[1]  * mat[11] +
-					mat[12] * mat[3]  * mat[9];
+		inv[6] = -mat[0] * mat[6] * mat[15] +
+			mat[0] * mat[7] * mat[14] +
+			mat[4] * mat[2] * mat[15] -
+			mat[4] * mat[3] * mat[14] -
+			mat[12] * mat[2] * mat[7] +
+			mat[12] * mat[3] * mat[6];
 
-		inv[10] =	mat[0]  * mat[5]  * mat[15] -
-					mat[0]  * mat[7]  * mat[13] -
-					mat[4]  * mat[1]  * mat[15] +
-					mat[4]  * mat[3]  * mat[13] +
-					mat[12] * mat[1]  * mat[7]  -
-					mat[12] * mat[3]  * mat[5];
+		inv[10] = mat[0] * mat[5] * mat[15] -
+			mat[0] * mat[7] * mat[13] -
+			mat[4] * mat[1] * mat[15] +
+			mat[4] * mat[3] * mat[13] +
+			mat[12] * mat[1] * mat[7] -
+			mat[12] * mat[3] * mat[5];
 
-		inv[11] =  -mat[0]  * mat[5]  * mat[11] +
-					mat[0]  * mat[7]  * mat[9]  +
-					mat[4]  * mat[1]  * mat[11] -
-					mat[4]  * mat[3]  * mat[9]  -
-					mat[8]  * mat[1]  * mat[7]  +
-					mat[8]  * mat[3]  * mat[5];
+		inv[14] = -mat[0] * mat[5] * mat[14] +
+			mat[0] * mat[6] * mat[13] +
+			mat[4] * mat[1] * mat[14] -
+			mat[4] * mat[2] * mat[13] -
+			mat[12] * mat[1] * mat[6] +
+			mat[12] * mat[2] * mat[5];
 
-		inv[12] =  -mat[4]  * mat[9]  * mat[14] +
-					mat[4]  * mat[10] * mat[13] +
-					mat[8]  * mat[5]  * mat[14] -
-					mat[8]  * mat[6]  * mat[13] -
-					mat[12] * mat[5]  * mat[10] +
-					mat[12] * mat[6]  * mat[9];
+		inv[3] = -mat[1] * mat[6] * mat[11] +
+			mat[1] * mat[7] * mat[10] +
+			mat[5] * mat[2] * mat[11] -
+			mat[5] * mat[3] * mat[10] -
+			mat[9] * mat[2] * mat[7] +
+			mat[9] * mat[3] * mat[6];
 
-		inv[13] =	mat[0]  * mat[9]  * mat[14] -
-					mat[0]  * mat[10] * mat[13] -
-					mat[8]  * mat[1]  * mat[14] +
-					mat[8]  * mat[2]  * mat[13] +
-					mat[12] * mat[1]  * mat[10] -
-					mat[12] * mat[2]  * mat[9];
+		inv[7] = mat[0] * mat[6] * mat[11] -
+			mat[0] * mat[7] * mat[10] -
+			mat[4] * mat[2] * mat[11] +
+			mat[4] * mat[3] * mat[10] +
+			mat[8] * mat[2] * mat[7] -
+			mat[8] * mat[3] * mat[6];
 
-		inv[14] =  -mat[0]  * mat[5]  * mat[14] +
-					mat[0]  * mat[6]  * mat[13] +
-					mat[4]  * mat[1]  * mat[14] -
-					mat[4]  * mat[2]  * mat[13] -
-					mat[12] * mat[1]  * mat[6]  +
-					mat[12] * mat[2]  * mat[5];
+		inv[11] = -mat[0] * mat[5] * mat[11] +
+			mat[0] * mat[7] * mat[9] +
+			mat[4] * mat[1] * mat[11] -
+			mat[4] * mat[3] * mat[9] -
+			mat[8] * mat[1] * mat[7] +
+			mat[8] * mat[3] * mat[5];
 
-		inv[15] =	mat[0]  * mat[5]  * mat[10] -
-					mat[0]  * mat[6]  * mat[9]  -
-					mat[4]  * mat[1]  * mat[10] +
-					mat[4]  * mat[2]  * mat[9]  +
-					mat[8]  * mat[1]  * mat[6]  -
-					mat[8]  * mat[2]  * mat[5];
+		inv[15] = mat[0] * mat[5] * mat[10] -
+			mat[0] * mat[6] * mat[9] -
+			mat[4] * mat[1] * mat[10] +
+			mat[4] * mat[2] * mat[9] +
+			mat[8] * mat[1] * mat[6] -
+			mat[8] * mat[2] * mat[5];
 
 		determinant = mat[0] * inv[0] + mat[1] * inv[4] + mat[2] * inv[8] + mat[3] * inv[12];
+
+		if (determinant == 0)
+			throw "Matrix does not have an inverse";
+
 		determinant = 1.0 / determinant;
 
 		for (int i = 0; i < 16; i++)
-		{
 			out[i] = inv[i] * determinant;
-		}
+
 		return Matrix4D(out);
 	}
 
@@ -745,16 +751,26 @@ public:
 			0,0,1,inVector[2],
 			0,0,0,inVector[3]);
 	}
-	static Matrix4D LookAt(Vector4D position, Vector4D target, Vector4D up)
+	static Matrix4D lookAt(Vector4D cameraPosition, Vector4D cameraTarget, Vector4D cameraUp) 
 	{
-		Vector4D front = target - position;
-		Vector4D right = Vector4D::cross(front, up.normalize()).normalize();
-		Vector4D i_up = Vector4D::cross(right, front);
+		Vector4D f = (cameraTarget - cameraPosition);
+		Vector4D u = Vector4D::normalize(cameraUp);
+		Vector4D s = Vector4D::normalize(Vector4D::cross(f,u));
+		u = Vector4D::cross(s,f);
 
-		return Matrix4D(right[0],	right[1],	right[2],  -Vector4D::dot(right, position),
-						up[0],		up[1],		up[2],	   -Vector4D::dot(up, position),
-						front[0],	front[1],	front[2],	Vector4D::dot(front, position),
-						0,			0,			0,			1);
+		Matrix4D lookAt = Matrix4D(s[0], s[1], s[2], -(Vector4D::dot(s, cameraPosition)),
+			u[0], u[1], u[2], -(Vector4D::dot(u, cameraPosition)),
+			-f[0], -f[1], -f[2], Vector4D::dot(f, cameraPosition),
+			0, 0, 0, 1
+		);
+
+		/*Matrix4D lookAt = Matrix4D(s.getFloat(0), u.getFloat(0),  f.getFloat(0), 0,
+									s.getFloat(1), u.getFloat(1), f.getFloat(1), 0,
+									s.getFloat(2), u.getFloat(2), f.getFloat(2), 0,
+									-(s.dotProduct(cameraPosition)), -(u.dotProduct(cameraPosition)), -(f.dotProduct(cameraPosition)), 1
+		);*/
+
+		return lookAt;
 	}
 	static Matrix4D perspective(float fieldOfView, float aspectRatio, float nearClip, float farClip)
 	{
