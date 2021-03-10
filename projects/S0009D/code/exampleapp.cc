@@ -14,9 +14,13 @@
 using namespace Display;
 namespace Example
 {
+	Matrix4D view;
 	Matrix4D lookAt;
 
-	Vector4D cameraPos = Vector4D(-1.0f, 0.0f, 5.0f, 1);
+	Vector4D* colorpick = new Vector4D();
+	int selectedIndex;
+
+	Vector4D cameraPos = Vector4D(0.0f, 0.0f, 5.0f, 1);
 	Vector4D cameraFront = Vector4D(0.0f, 0.0f, -1.0f, 1);
 	Vector4D cameraUp = Vector4D(0.0f, 1.0f, 0.0f, 1);
 
@@ -69,10 +73,16 @@ namespace Example
 					world.normalize();
 
 					Ray ray = Ray(cameraPos, world);
-					debugManager.createLine(ray.getOrigin(), ray.getPointOnRay(100));
-					
+					rays.push_back(ray);
+					for (int i = 0; i < planes.size(); i++)
+					{
+						if (ray.checkIfHitting(planes[i]))
+						{
+							colorpick = planes[i].getColor();
+							selectedIndex = i;
+						}
+					}
 				}
-
 			});
 		window->SetMouseMoveFunction([this](float64 xPos, float64 yPos)
 			{
@@ -164,8 +174,9 @@ namespace Example
 				0, 0, -1, 0
 			);
 
-			//debugManager.createSquare(Vector4D(0, 0, -5), Vector2D(5, 5));
-			debugManager.createSphere(Vector4D(0, 0, -2), 1.5f);
+			planes.push_back(Plane(Vector4D(0, 0, -1), Vector2D(2, 2), Vector4D(0, 0, 1), Vector4D(1, 1, 4)));
+			planes.push_back(Plane(Vector4D(0, 3, 0), Vector2D(4, 2), Vector4D(0, 0, 1), Vector4D(1, 1, 4)));
+			planes.push_back(Plane(Vector4D(6, 0, -1), Vector2D(2, 2), Vector4D(0, 0, 1), Vector4D(1, 1, 4)));
 
 			this->window->SetUiRender([this]()
 				{
@@ -185,13 +196,33 @@ namespace Example
 			ImGui::SetNextWindowSize(ImVec2(200, 400));
 			ImGui::Begin("test UI", &show);
 
+			ImGui::Checkbox("render", DebugManager::getInstance().bRender());
+
+			ImGui::Text("rays: %i", rays.size());
+			ImGui::Text("planes: %i", planes.size());
+			
 			if (ImGui::Button("Clear"))
 			{
-				debugManager.clear();
+				rays.clear();
+				DebugManager::getInstance().clear();
 			}
-			ImGui::Text("debugshapes # %i", debugManager.debugShapes.size());
-			ImGui::Text("savedshapes # %i", debugManager.savedShapes.size());
-			ImGui::Checkbox("render", debugManager.bRender());
+			ImGui::Text("selected index: %i", selectedIndex);
+
+			if (ImGui::CollapsingHeader("Square"))
+			{
+				float* pos = planes[selectedIndex].getPosition().GetPointer();
+				if (ImGui::DragFloat3("position", pos, 0.5f, -10.0f, 10.0f, "%.1f"))
+				{
+					planes[selectedIndex].setPosition(Vector4D(pos[0], pos[1], pos[2]));
+				}
+				float* col = planes[selectedIndex].getColor()->GetPointer();
+				if (ImGui::ColorEdit4("selected square color", col))
+				{
+					planes[selectedIndex].setColor(Vector4D(col));
+				}
+			}
+
+
 
 			ImGui::End();
 		}
@@ -205,10 +236,9 @@ namespace Example
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			lookAt = Matrix4D::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-			Matrix4D view = perspectiveProjection * lookAt;
-			debugManager.setViewMatrix(view);
+			view = perspectiveProjection * lookAt;
 
-			debugManager.drawDebugShapes();
+			DebugManager::getInstance().drawDebugShapes(view);
 
 			this->window->SwapBuffers();
 			if (closeApp)

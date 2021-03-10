@@ -405,6 +405,10 @@ public:
 	{
 		cord[0] = x; cord[1] = y; cord[2] = z; cord[3] = w;
 	}
+	Vector4D(float arr[4])
+	{
+		cord[0] = arr[0]; cord[1] = arr[1]; cord[2] = arr[2]; cord[3] = arr[3];
+	}
 
 	/// Deconstructor
 	//====================================================================================================
@@ -415,7 +419,7 @@ public:
 
 	/// Functions
 	//====================================================================================================
-	void Set(float x, float y, float z, float w)
+	void Set(float x = 0, float y = 0, float z = 0, float w = 1)
 	{
 		cord[0] = x; cord[1] = y; cord[2] = z; cord[3] = w;
 	}
@@ -451,6 +455,10 @@ public:
 	{
 		return (a[0] * b[0]) + (a[1] * b[1]) + (a[2] * b[2]);
 	}
+	float dot(const Vector4D& rhs)
+	{
+		return cord[0] * rhs[0] + cord[1] * rhs[1] + cord[2] * rhs[2];
+	}
 	static Vector4D cross(const Vector4D a, const Vector4D b)
 	{
 		return Vector4D((a[1] * b[2] - a[2] * b[1]), (a[2] * b[0] - a[0] * b[2]), (a[0] * b[1] - a[1] * b[0]), 1.0f);
@@ -463,19 +471,15 @@ public:
 
 	/// Operators
 	//====================================================================================================
-	Vector4D operator*(float scalor) // Scaling
+	Vector4D operator*(const float scalor) const // Scaling
 	{
 		return Vector4D(cord[0] * scalor, cord[1] * scalor, cord[2] * scalor);
 	}
-	float operator*(Vector4D rhs) // Dot Multi
-	{
-		return (cord[0] * rhs.cord[0]) + (cord[1] * rhs[1]) + (cord[2] * rhs[2]);
-	}
-	Vector4D operator+(Vector4D& rhs) //Addition
+	Vector4D operator+(const Vector4D& rhs) const //Addition
 	{
 		return Vector4D((cord[0] + rhs[0]), (cord[1] + rhs[1]), (cord[2] + rhs[2]));
 	}
-	Vector4D operator-(Vector4D& rhs) //Subtraction
+	Vector4D operator-(const Vector4D& rhs) const //Subtraction
 	{
 		return Vector4D((cord[0] - rhs[0]), (cord[1] - rhs[1]), (cord[2] - rhs[2]));
 	}
@@ -750,6 +754,46 @@ public:
 			0,1,0,inVector[1],
 			0,0,1,inVector[2],
 			0,0,0,inVector[3]);
+	}
+	static Matrix4D getRotationMatrix(const Vector4D& inVector)
+	{
+		if (inVector[0] == 0 && inVector[1] == 0 && inVector[2] == 1)
+			return Matrix4D();
+		
+		float rot[16];
+
+		Vector4D invertedZ = inVector;
+		invertedZ[2] *= -1;
+		invertedZ.normalize();
+
+		Vector4D V = Vector4D::cross(Vector4D(0, 0, 1, 1), invertedZ);
+		V.normalize();
+
+		float phi = acos(Vector4D::dot(Vector4D(0, 0, 1, 1), invertedZ));
+		float rcos = cos(phi);
+		float rsin = sin(phi);
+
+		rot[0]  =		  rcos + V[0] * V[0] * (1.0f - rcos);
+		rot[1]  =  V[2] * rsin + V[1] * V[0] * (1.0f - rcos);
+		rot[2]  = -V[1] * rsin + V[2] * V[0] * (1.0f - rcos);
+		rot[3]  =  0.0f;
+
+		rot[4] = -V[2] * rsin + V[0] * V[1] * (1.0 - rcos);
+		rot[5] = 		 rcos + V[1] * V[1] * (1.0 - rcos);
+		rot[6] = -V[0] * rsin + V[2] * V[1] * (1.0 - rcos);
+		rot[7] = 0.0f;
+
+		rot[8] =   V[1] * rsin + V[0] * V[2] * (1.0 - rcos);
+		rot[9] =  -V[0] * rsin + V[1] * V[2] * (1.0 - rcos);
+		rot[10] = 		  rcos + V[2] * V[2] * (1.0 - rcos);
+		rot[11] = 0.0f;
+
+		rot[12] = 0.0f;
+		rot[13] = 0.0f;
+		rot[14] = 0.0f;
+		rot[15] = 1.0f;
+
+		return Matrix4D(rot);
 	}
 	static Matrix4D lookAt(Vector4D cameraPosition, Vector4D cameraTarget, Vector4D cameraUp) 
 	{

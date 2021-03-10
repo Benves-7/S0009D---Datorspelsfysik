@@ -7,32 +7,29 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-
 #include "core/app.h"
 
 
 using namespace std;
-
 class DebugBase
 {
 public:
 	virtual void draw(Matrix4D viewMatrix)
 	{
-		glUseProgram(program);
+		if (!errorsent)
+		{
+			std::cout << "Draw function missing" << std::endl;
+			errorsent = true;
+		}
+	}
 
-		unsigned int location = glGetUniformLocation(program, "view");
-		glUniformMatrix4fv(location, 1, GL_TRUE, viewMatrix.getPointer());
-
-		location = glGetUniformLocation(program, "model");
-		glUniformMatrix4fv(location, 1, GL_TRUE, Matrix4D().getPointer());
-
-		location = glGetUniformLocation(program, "color");
-		glUniform4fv(location, 1, color.GetPointer());
-
-		glBindVertexArray(VAO);
-		glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, NULL);
-		glBindVertexArray(0);
-		glUseProgram(0);
+	virtual void setColor(Vector4D col)
+	{
+		color = col;
+	}
+	virtual void setPosition(Vector4D pos)
+	{
+		position = pos;
 	}
 
 protected:
@@ -102,10 +99,10 @@ protected:
 		ifstream file("dfs.shader");
 		if (file.fail())
 		{
-			if (!errorcode)
+			if (!errorsent)
 			{
 				cout << "Error: failed to load fragmentshader" << endl;
-				errorcode = true;
+				errorsent = true;
 				return 0;
 			}
 		}
@@ -122,10 +119,10 @@ protected:
 		ifstream file("dvs.shader");
 		if (file.fail())
 		{
-			if (!errorcode)
+			if (!errorsent)
 			{
 				cout << "Error: failed to load vertexshader" << endl;
-				errorcode = true;
+				errorsent = true;
 				return 0;
 			}
 		}
@@ -138,31 +135,32 @@ protected:
 		}
 	}
 
-	bool errorcode = false;
+	bool errorsent = false;
 	vector<float>vertices;
 	vector<int>indices;
 	unsigned int VAO, EBO, VBO, vertexShader, fragmentShader, program;
 	const char* vs;
 	const char* fs;
-	Vector4D color;
+	Vector4D color, position;
 };
 
 class DebugSquare : public DebugBase
 {
 public:
-	DebugSquare(Vector4D pos, Vector2D dim, Vector4D col = Vector4D(1, 1, 1, 1))
+	DebugSquare(Vector4D pos, Vector2D dim, Vector4D dir, Vector4D col = Vector4D(1, 1, 1, 1))
 	{
 		position = pos;
+		direction = Vector4D::normalize(dir);
 		dimentions = dim;
 		color = col;
 
 		float w = dim[0] / 2;
 		float h = dim[1] / 2;
 
-		vertices.push_back(pos[0] + w); vertices.push_back(pos[1] + h); vertices.push_back(pos[2]);
-		vertices.push_back(pos[0] + w); vertices.push_back(pos[1] - h); vertices.push_back(pos[2]);
-		vertices.push_back(pos[0] - w); vertices.push_back(pos[1] - h); vertices.push_back(pos[2]);
-		vertices.push_back(pos[0] - w); vertices.push_back(pos[1] + h); vertices.push_back(pos[2]);
+		vertices.push_back(w);  vertices.push_back(h);  vertices.push_back(0);
+		vertices.push_back(w);  vertices.push_back(-h); vertices.push_back(0);
+		vertices.push_back(-w); vertices.push_back(-h); vertices.push_back(0);
+		vertices.push_back(-w); vertices.push_back(h);  vertices.push_back(0);
 
 		indices.push_back(0); indices.push_back(1); indices.push_back(2);
 		indices.push_back(0); indices.push_back(3); indices.push_back(2);
@@ -182,7 +180,10 @@ public:
 		glUniformMatrix4fv(location, 1, GL_TRUE, viewMatrix.getPointer());
 
 		location = glGetUniformLocation(program, "model");
-		glUniformMatrix4fv(location, 1, GL_TRUE, Matrix4D().getPointer());
+		Matrix4D p = Matrix4D::getPositionMatrix(position);
+		Matrix4D d = Matrix4D::getRotationMatrix(direction);
+
+		glUniformMatrix4fv(location, 1, GL_TRUE, (Matrix4D::getPositionMatrix(position) * Matrix4D::getRotationMatrix(direction)).getPointer());
 
 		location = glGetUniformLocation(program, "color");
 		glUniform4fv(location, 1, color.GetPointer());
@@ -192,16 +193,25 @@ public:
 		glBindVertexArray(0);
 		glUseProgram(0);
 	}
+	void setPosition(Vector4D pos)
+	{
+		position = pos;
+	}
+	void setDirection(Vector4D dir)
+	{
+		//direction = dir;
+	}
 
 private:
 
-	Vector4D position;
+	Vector4D direction;
 	Vector2D dimentions;
 };
 
 class DebugLine : public DebugBase
 {
 public:
+
 	DebugLine(Vector4D p1, Vector4D p2, Vector4D c = Vector4D(255, 0, 0, 1))
 	{
 		point1 = p1;
@@ -223,6 +233,11 @@ public:
 	~DebugLine()
 	{
 
+	}
+
+	void setColor(Vector4D col)
+	{
+		color = col;
 	}
 
 	void draw(Matrix4D viewMatrix)
@@ -318,13 +333,13 @@ public:
 
 private:
 
-	Vector4D position, dimentions;
+	Vector4D dimentions;
 };
 
 class DebugSphere : public DebugBase
 {
 public:
-	DebugSphere(Vector4D pos, float rad, Vector4D col = Vector4D(100, 40, 150))
+	DebugSphere(Vector4D pos, float rad, Vector4D col = Vector4D(0, 1, 0))
 	{
 		position = pos;
 		radius = rad;
@@ -385,6 +400,5 @@ public:
 
 private:
 
-	Vector4D position;
 	float radius;
 };

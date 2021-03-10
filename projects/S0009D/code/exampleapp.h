@@ -10,7 +10,10 @@
 #include "render/window.h"
 #include "Camera.h"
 #include "debug/debugManager.h"
+
 #include "Ray.h"
+#include "Plane.h"
+
 #include <chrono>
 #include <vector>
 
@@ -54,6 +57,7 @@ namespace Example
 
 		Matrix4D perspectiveProjection;
 
-		DebugManager debugManager;
+		vector<Plane> planes;
+		vector<Ray> rays;
 	};
 }
