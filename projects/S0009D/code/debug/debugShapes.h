@@ -151,7 +151,7 @@ public:
 	{
 		position = pos;
 		direction = Vector4D::normalize(dir);
-		dimentions = dim;
+		dimentions = Vector4D(dim[0], dim[1], 1, 1);
 		color = col;
 
 		float w = dim[0] / 2;
@@ -180,9 +180,6 @@ public:
 		glUniformMatrix4fv(location, 1, GL_TRUE, viewMatrix.getPointer());
 
 		location = glGetUniformLocation(program, "model");
-		Matrix4D p = Matrix4D::getPositionMatrix(position);
-		Matrix4D d = Matrix4D::getRotationMatrix(direction);
-
 		glUniformMatrix4fv(location, 1, GL_TRUE, (Matrix4D::getPositionMatrix(position) * Matrix4D::getRotationMatrix(direction)).getPointer());
 
 		location = glGetUniformLocation(program, "color");
@@ -204,8 +201,7 @@ public:
 
 private:
 
-	Vector4D direction;
-	Vector2D dimentions;
+	Vector4D direction, dimentions;
 };
 
 class DebugLine : public DebugBase

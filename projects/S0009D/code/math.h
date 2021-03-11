@@ -751,9 +751,9 @@ public:
 	static Matrix4D getPositionMatrix(const Vector4D& inVector)
 	{
 		return Matrix4D(1,0,0,inVector[0],
-			0,1,0,inVector[1],
-			0,0,1,inVector[2],
-			0,0,0,inVector[3]);
+						0,1,0,inVector[1],
+						0,0,1,inVector[2],
+						0,0,0,inVector[3]);
 	}
 	static Matrix4D getRotationMatrix(const Vector4D& inVector)
 	{
@@ -794,6 +794,13 @@ public:
 		rot[15] = 1.0f;
 
 		return Matrix4D(rot);
+	}
+	static Matrix4D getScaleMatrix(const Vector4D& inVector)
+	{
+		return Matrix4D(inVector[0], 0, 0, 0,
+						0, inVector[1], 0, 0,
+						0, 0, inVector[2], 0,
+						0, 0, 0,           0);
 	}
 	static Matrix4D lookAt(Vector4D cameraPosition, Vector4D cameraTarget, Vector4D cameraUp) 
 	{
@@ -853,25 +860,25 @@ public:
 	{
 		float returnMatrix[16];
 
-		returnMatrix[0] = (matrix[0] * rhs.matrix[0]) + (matrix[1] * rhs.matrix[4]) + (matrix[2] * rhs.matrix[8]) + (matrix[3] * rhs.matrix[12]);
-		returnMatrix[1] = (matrix[0] * rhs.matrix[1]) + (matrix[1] * rhs.matrix[5]) + (matrix[2] * rhs.matrix[9]) + (matrix[3] * rhs.matrix[13]);
-		returnMatrix[2] = (matrix[0] * rhs.matrix[2]) + (matrix[1] * rhs.matrix[6]) + (matrix[2] * rhs.matrix[10]) + (matrix[3] * rhs.matrix[14]);
-		returnMatrix[3] = (matrix[0] * rhs.matrix[3]) + (matrix[1] * rhs.matrix[7]) + (matrix[2] * rhs.matrix[11]) + (matrix[3] * rhs.matrix[15]);
+		returnMatrix[0] = matrix[0] * rhs[0] + matrix[1] * rhs[4] + matrix[2] * rhs[8] + matrix[3] * rhs[12];
+		returnMatrix[1] = matrix[0] * rhs[1] + matrix[1] * rhs[5] + matrix[2] * rhs[9] + matrix[3] * rhs[13];
+		returnMatrix[2] = matrix[0] * rhs[2] + matrix[1] * rhs[6] + matrix[2] * rhs[10] + matrix[3] * rhs[14];
+		returnMatrix[3] = matrix[0] * rhs[3] + matrix[1] * rhs[7] + matrix[2] * rhs[11] + matrix[3] * rhs[15];
 
-		returnMatrix[4] = (matrix[4] * rhs.matrix[0]) + (matrix[5] * rhs.matrix[4]) + (matrix[6] * rhs.matrix[8]) + (matrix[7] * rhs.matrix[12]);
-		returnMatrix[5] = (matrix[4] * rhs.matrix[1]) + (matrix[5] * rhs.matrix[5]) + (matrix[6] * rhs.matrix[9]) + (matrix[7] * rhs.matrix[13]);
-		returnMatrix[6] = (matrix[4] * rhs.matrix[2]) + (matrix[5] * rhs.matrix[6]) + (matrix[6] * rhs.matrix[10]) + (matrix[7] * rhs.matrix[14]);
-		returnMatrix[7] = (matrix[4] * rhs.matrix[3]) + (matrix[5] * rhs.matrix[7]) + (matrix[6] * rhs.matrix[11]) + (matrix[7] * rhs.matrix[15]);
+		returnMatrix[4] = matrix[4] * rhs[0] + matrix[5] * rhs[4] + matrix[6] * rhs[8] + matrix[7] * rhs[12];
+		returnMatrix[5] = matrix[4] * rhs[1] + matrix[5] * rhs[5] + matrix[6] * rhs[9] + matrix[7] * rhs[13];
+		returnMatrix[6] = matrix[4] * rhs[2] + matrix[5] * rhs[6] + matrix[6] * rhs[10] + matrix[7] * rhs[14];
+		returnMatrix[7] = matrix[4] * rhs[3] + matrix[5] * rhs[7] + matrix[6] * rhs[11] + matrix[7] * rhs[15];
 
-		returnMatrix[8] = (matrix[8] * rhs.matrix[0]) + (matrix[9] * rhs.matrix[4]) + (matrix[10] * rhs.matrix[8]) + (matrix[11] * rhs.matrix[12]);
-		returnMatrix[9] = (matrix[8] * rhs.matrix[1]) + (matrix[9] * rhs.matrix[5]) + (matrix[10] * rhs.matrix[9]) + (matrix[11] * rhs.matrix[13]);
-		returnMatrix[10] = (matrix[8] * rhs.matrix[2]) + (matrix[9] * rhs.matrix[6]) + (matrix[10] * rhs.matrix[10]) + (matrix[11] * rhs.matrix[14]);
-		returnMatrix[11] = (matrix[8] * rhs.matrix[3]) + (matrix[9] * rhs.matrix[7]) + (matrix[10] * rhs.matrix[11]) + (matrix[11] * rhs.matrix[15]);
+		returnMatrix[8] = matrix[8] * rhs[0] + matrix[9] * rhs[4] + matrix[10] * rhs[8] + matrix[11] * rhs[12];
+		returnMatrix[9] = matrix[8] * rhs[1] + matrix[9] * rhs[5] + matrix[10] * rhs[9] + matrix[11] * rhs[13];
+		returnMatrix[10] = matrix[8] * rhs[2] + matrix[9] * rhs[6] + matrix[10] * rhs[10] + matrix[11] * rhs[14];
+		returnMatrix[11] = matrix[8] * rhs[3] + matrix[9] * rhs[7] + matrix[10] * rhs[11] + matrix[11] * rhs[15];
 
-		returnMatrix[12] = (matrix[12] * rhs.matrix[0]) + (matrix[13] * rhs.matrix[4]) + (matrix[14] * rhs.matrix[8]) + (matrix[15] * rhs.matrix[12]);
-		returnMatrix[13] = (matrix[12] * rhs.matrix[1]) + (matrix[13] * rhs.matrix[5]) + (matrix[14] * rhs.matrix[9]) + (matrix[15] * rhs.matrix[13]);
-		returnMatrix[14] = (matrix[12] * rhs.matrix[2]) + (matrix[13] * rhs.matrix[6]) + (matrix[14] * rhs.matrix[10]) + (matrix[15] * rhs.matrix[14]);
-		returnMatrix[15] = (matrix[12] * rhs.matrix[3]) + (matrix[13] * rhs.matrix[7]) + (matrix[14] * rhs.matrix[11]) + (matrix[15] * rhs.matrix[15]);
+		returnMatrix[12] = matrix[12] * rhs[0] + matrix[13] * rhs[4] + matrix[14] * rhs[8] + matrix[15] * rhs[12];
+		returnMatrix[13] = matrix[12] * rhs[1] + matrix[13] * rhs[5] + matrix[14] * rhs[9] + matrix[15] * rhs[13];
+		returnMatrix[14] = matrix[12] * rhs[2] + matrix[13] * rhs[6] + matrix[14] * rhs[10] + matrix[15] * rhs[14];
+		returnMatrix[15] = matrix[12] * rhs[3] + matrix[13] * rhs[7] + matrix[14] * rhs[11] + matrix[15] * rhs[15];
 
 		return Matrix4D(returnMatrix);
 	}

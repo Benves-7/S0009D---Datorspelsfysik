@@ -1,6 +1,7 @@
 #pragma once
 #include "debug/debugShapes.h"
 #include "Plane.h"
+#include <limits>
 
 /// TODO: make seperate .cpp for ray and plane so to stop the circular include dependency..
 
@@ -35,6 +36,25 @@ public:
 		return origin + (direction * i);
 	}
 
+	Plane& checkHit(vector<Plane> planes)
+	{
+		float closest = std::numeric_limits<float>::infinity();
+		int best = -1;
+		for (int i = 0; i < planes.size(); i++)
+		{
+			float dist = checkIfHitting(planes.at(i));
+			if (dist < closest && dist != -1)
+			{
+				closest = dist;
+				best = i;
+			}
+		}
+		if (best != -1)
+		{
+			return planes.at(best);
+		}
+	}
+
 	IntersectData intersect(Plane plane)
 	{
 		Vector4D diff = origin - plane.getPosition();
@@ -44,39 +64,27 @@ public:
 		float prod3 = prod1 / prod2;
 
 		// with the distance a point on the plane can be calculated.
-		return IntersectData((origin - direction * prod3), prod2);
+		return IntersectData((origin - direction * prod3), prod3);
 	}
-	bool checkIfHitting(Plane plane)
+	float checkIfHitting(Plane plane)
 	{
 		IntersectData result = intersect(plane);
-
+		//DebugManager::getInstance().addSafeShape(new DebugSphere(result.point, 0.05));
 		if (result.distance == -1)
-			return false;
+			return -1;
 
-		Vector4D point = result.point;
-		point[3] = 1;
-		point = Matrix4D::inverse(Matrix4D::getPositionMatrix(plane.getPosition()) * Matrix4D::getRotationMatrix(plane.getNormal())) * point;
+		Vector4D a = result.point;
+		Vector4D b = plane.P1();
+		Vector4D c = plane.P2();
+		Vector4D d = plane.P3();
+		Vector4D e = plane.P4();
 
-		Vector4D normal1 = Vector4D::normalize(plane.P1() - plane.P2());
-		Vector4D normal2 = Vector4D::normalize(plane.P2() - plane.P1());
-		Vector4D normal3 = Vector4D::normalize(plane.P2() - plane.P3());
-		Vector4D normal4 = Vector4D::normalize(plane.P3() - plane.P2());
-
-		Vector4D intersectVector1 = Vector4D::normalize(point - plane.P1());
-		Vector4D intersectVector2 = Vector4D::normalize(point - plane.P2());
-		Vector4D intersectVector3 = Vector4D::normalize(point - plane.P3());
-		Vector4D intersectVector4 = Vector4D::normalize(point - plane.P4());
-
-		float t1 = Vector4D::dot(intersectVector1, normal3);
-		float t2 = Vector4D::dot(intersectVector3, normal4);
-		float t3 = Vector4D::dot(intersectVector2, normal2);
-		float t4 = Vector4D::dot(intersectVector4, normal1);
-
-		if (t1 < 0 && t2 < 0 && t3 < 0 && t4 < 0)
+		if ((Vector4D::dot(b, c - b) <= Vector4D::dot(a, c - b) && Vector4D::dot(a, c - b) <= Vector4D::dot(c, c - b)) &&
+			(Vector4D::dot(b, e - b) <= Vector4D::dot(a, e - b) && Vector4D::dot(a, e - b) <= Vector4D::dot(e, e - b)))
 		{
 			intersections.push_back(result);
 			DebugManager::getInstance().addShape(new DebugSphere(result.point, 0.05f));
-			return true;
+			return result.distance;
 		}
 		else
 		{
