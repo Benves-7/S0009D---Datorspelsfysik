@@ -11,6 +11,10 @@ struct IntersectData
 	float distance;
 	IntersectData(Vector4D point, float distance) : point(point), distance(distance) {};
 };
+struct ReturnInfo
+{
+	int index;
+};
 
 class Ray
 {
@@ -36,7 +40,7 @@ public:
 		return origin + (direction * i);
 	}
 
-	Plane& checkHit(vector<Plane> planes)
+	int checkHit(vector<Plane> planes)
 	{
 		float closest = std::numeric_limits<float>::infinity();
 		int best = -1;
@@ -51,7 +55,7 @@ public:
 		}
 		if (best != -1)
 		{
-			return planes.at(best);
+			return best;
 		}
 	}
 
@@ -64,7 +68,7 @@ public:
 		float prod3 = prod1 / prod2;
 
 		// with the distance a point on the plane can be calculated.
-		return IntersectData((origin - direction * prod3), prod3);
+		return IntersectData((origin - direction * prod3), -prod3);
 	}
 	float checkIfHitting(Plane plane)
 	{
@@ -88,7 +92,7 @@ public:
 		}
 		else
 		{
-			return false;
+			return -1;
 		}
 	}
 

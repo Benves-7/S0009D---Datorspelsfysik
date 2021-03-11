@@ -23,11 +23,6 @@ public:
 		p3 = Vector4D(pos[0] - w, pos[1] - h, pos[2]);
 		p4 = Vector4D(pos[0] - w, pos[1] + h, pos[2]);
 
-		//DebugManager::getInstance().addSafeShape(new DebugSphere(pos, 0.02f, Vector4D(0, 0, 1)));
-		DebugManager::getInstance().addSafeShape(new DebugSphere(p1, 0.02f, Vector4D(0, 0, 1)));
-		DebugManager::getInstance().addSafeShape(new DebugSphere(p2, 0.02f, Vector4D(0, 0, 1)));
-		DebugManager::getInstance().addSafeShape(new DebugSphere(p3, 0.02f, Vector4D(0, 0, 1)));
-		DebugManager::getInstance().addSafeShape(new DebugSphere(p4, 0.02f, Vector4D(0, 0, 1)));
 		debugIndex = DebugManager::getInstance().addSafeShape(new DebugSquare(pos, dim, dir, col));
 	}
 	~Plane()

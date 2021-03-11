@@ -74,14 +74,9 @@ namespace Example
 
 					Ray ray = Ray(cameraPos, world);
 					rays.push_back(ray);
-					for (int i = 0; i < planes.size(); i++)
-					{
-						if (ray.checkIfHitting(planes[i]))
-						{
-							colorpick = planes[i].getColor();
-							selectedIndex = i;
-						}
-					}
+
+					selectedIndex = ray.checkHit(planes);
+					colorpick = planes[selectedIndex].getColor();
 				}
 			});
 		window->SetMouseMoveFunction([this](float64 xPos, float64 yPos)
@@ -174,9 +169,9 @@ namespace Example
 				0, 0, -1, 0
 			);
 
-			planes.push_back(Plane(Vector4D(0, 0, -1), Vector2D(2, 2), Vector4D(0, 0, 1), Vector4D(1, 1, 4)));
-			planes.push_back(Plane(Vector4D(0, 3, 0), Vector2D(4, 2), Vector4D(0, 0, 1), Vector4D(1, 1, 4)));
-			planes.push_back(Plane(Vector4D(6, 0, -1), Vector2D(2, 2), Vector4D(0, 0, 1), Vector4D(1, 1, 4)));
+			planes.push_back(Plane(Vector4D(0, 0, -1), Vector2D(2, 2), Vector4D(0, 0, 1), Vector4D(1, 0, 0)));
+			planes.push_back(Plane(Vector4D(0, 0, 0), Vector2D(2, 2), Vector4D(0, 0, 1), Vector4D(0, 1, 1)));
+			planes.push_back(Plane(Vector4D(0, 0, -5), Vector2D(2, 2), Vector4D(0, 0, 1), Vector4D(1, 1, 1)));
 
 			this->window->SetUiRender([this]()
 				{
