@@ -23,6 +23,10 @@ public:
 		}
 	}
 
+	Vector4D* getColor()
+	{
+		return &color;
+	}
 	virtual void setColor(Vector4D col)
 	{
 		color = col;
@@ -30,6 +34,10 @@ public:
 	virtual void setPosition(Vector4D pos)
 	{
 		position = pos;
+	}
+	virtual void setNormal(Vector4D nor)
+	{
+		direction = nor;
 	}
 
 protected:
@@ -53,7 +61,7 @@ protected:
 
 		// Vertex shader
 		vertexShader = glCreateShader(GL_VERTEX_SHADER);
-		string temp = setupVertexShader();
+		string temp = setupDebugVertexShader();
 		vs = temp.c_str();
 		GLint len = static_cast<GLint>(strlen(vs));
 		glShaderSource(vertexShader, 1, &vs, &len);
@@ -72,7 +80,7 @@ protected:
 
 		// Fragment shader
 		fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		temp = setupFragmentShader();
+		temp = setupDebugFragmentShader();
 		fs = temp.c_str();
 		len = static_cast<GLint>(strlen(fs));
 		glShaderSource(fragmentShader, 1, &fs, &len);
@@ -94,7 +102,7 @@ protected:
 		glLinkProgram(program);
 	}
 
-	string setupFragmentShader()
+	string setupDebugFragmentShader()
 	{
 		ifstream file("dfs.shader");
 		if (file.fail())
@@ -114,7 +122,7 @@ protected:
 			return temp;
 		}
 	}
-	string setupVertexShader()
+	string setupDebugVertexShader()
 	{
 		ifstream file("dvs.shader");
 		if (file.fail())
@@ -141,18 +149,19 @@ protected:
 	unsigned int VAO, EBO, VBO, vertexShader, fragmentShader, program;
 	const char* vs;
 	const char* fs;
-	Vector4D color, position;
+	Vector4D color, position, direction;
 };
 
 class DebugSquare : public DebugBase
 {
 public:
-	DebugSquare(Vector4D pos, Vector2D dim, Vector4D dir, Vector4D col = Vector4D(1, 1, 1, 1))
+	DebugSquare(Vector4D pos, Vector2D dim, Vector4D dir, bool wf, Vector4D col = Vector4D(1, 1, 1, 1))
 	{
 		position = pos;
 		direction = Vector4D::normalize(dir);
 		dimentions = Vector4D(dim[0], dim[1], 1, 1);
 		color = col;
+		wireframe = wf;
 
 		float w = dim[0] / 2;
 		float h = dim[1] / 2;
@@ -185,23 +194,23 @@ public:
 		location = glGetUniformLocation(program, "color");
 		glUniform4fv(location, 1, color.GetPointer());
 
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
+		glBindVertexArray(VAO);		
+		if (wireframe)
+		{
+			glDrawElements(GL_LINE_STRIP, indices.size(), GL_UNSIGNED_INT, NULL);
+		}
+		else
+		{
+			glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
+		}
 		glBindVertexArray(0);
 		glUseProgram(0);
-	}
-	void setPosition(Vector4D pos)
-	{
-		position = pos;
-	}
-	void setDirection(Vector4D dir)
-	{
-		//direction = dir;
 	}
 
 private:
 
-	Vector4D direction, dimentions;
+	Vector4D dimentions;
+	bool wireframe;
 };
 
 class DebugLine : public DebugBase
@@ -263,43 +272,44 @@ private:
 class DebugCube : public DebugBase
 {
 public:
-	DebugCube(Vector4D pos, Vector4D dim, Vector4D col = Vector4D(10, 30, 30, 1))
+	DebugCube(Vector4D pos, Vector4D dim, bool wf, Vector4D col = Vector4D(10, 30, 30, 1))
 	{
 		position = pos;
 		dimentions = dim;
 		color = col;
+		wireframe = wf;
 
 		float w = dim[0] / 2;
 		float h = dim[1] / 2;
 		float d = dim[2] / 2;
 
-		vertices.push_back(pos[0] + w); vertices.push_back(pos[1] + h); vertices.push_back(pos[2] + d);
-		vertices.push_back(pos[0] + w); vertices.push_back(pos[1] + h); vertices.push_back(pos[2] - d);
-		vertices.push_back(pos[0] - w); vertices.push_back(pos[1] + h); vertices.push_back(pos[2] - d);
-		vertices.push_back(pos[0] - w); vertices.push_back(pos[1] + h); vertices.push_back(pos[2] + d);
+		vertices.push_back(w); vertices.push_back(h); vertices.push_back(d);
+		vertices.push_back(w); vertices.push_back(h); vertices.push_back(-d);
+		vertices.push_back(-w); vertices.push_back(h); vertices.push_back(-d);
+		vertices.push_back(-w); vertices.push_back(h); vertices.push_back(d);
 
-		vertices.push_back(pos[0] + w); vertices.push_back(pos[1] - h); vertices.push_back(pos[2] + d);
-		vertices.push_back(pos[0] + w); vertices.push_back(pos[1] - h); vertices.push_back(pos[2] - d);
-		vertices.push_back(pos[0] - w); vertices.push_back(pos[1] - h); vertices.push_back(pos[2] - d);
-		vertices.push_back(pos[0] - w); vertices.push_back(pos[1] - h); vertices.push_back(pos[2] + d);
+		vertices.push_back(w); vertices.push_back(-h); vertices.push_back(d);
+		vertices.push_back(w); vertices.push_back(-h); vertices.push_back(-d);
+		vertices.push_back(-w); vertices.push_back(-h); vertices.push_back(-d);
+		vertices.push_back(-w); vertices.push_back(-h); vertices.push_back(d);
 
-		indices.push_back(0); indices.push_back(1); indices.push_back(2);
+		indices.push_back(0); indices.push_back(1); indices.push_back(2); // TOP
 		indices.push_back(0); indices.push_back(2); indices.push_back(3);
 
-		indices.push_back(0); indices.push_back(4); indices.push_back(5);
-		indices.push_back(0); indices.push_back(1); indices.push_back(5);
-
-		indices.push_back(1); indices.push_back(5); indices.push_back(6);
-		indices.push_back(1); indices.push_back(2); indices.push_back(6);
-
-		indices.push_back(2); indices.push_back(3); indices.push_back(6);
-		indices.push_back(6); indices.push_back(7); indices.push_back(3);
-
-		indices.push_back(0); indices.push_back(3); indices.push_back(7);
-		indices.push_back(0); indices.push_back(4); indices.push_back(7);
-		
-		indices.push_back(4); indices.push_back(5); indices.push_back(6);
+		indices.push_back(4); indices.push_back(5); indices.push_back(6); // BOT
 		indices.push_back(4); indices.push_back(6); indices.push_back(7);
+
+		indices.push_back(4); indices.push_back(0); indices.push_back(3); // FRO
+		indices.push_back(4); indices.push_back(3); indices.push_back(7);
+
+		indices.push_back(5); indices.push_back(1); indices.push_back(2); // BAC
+		indices.push_back(5); indices.push_back(2); indices.push_back(6);
+
+		indices.push_back(6); indices.push_back(2); indices.push_back(3); // LEF
+		indices.push_back(6); indices.push_back(3); indices.push_back(7);
+
+		indices.push_back(4); indices.push_back(0); indices.push_back(1); // RIG
+		indices.push_back(4); indices.push_back(1); indices.push_back(5);
 
 		setup();
 	}
@@ -316,19 +326,27 @@ public:
 		glUniformMatrix4fv(location, 1, GL_TRUE, viewMatrix.getPointer());
 
 		location = glGetUniformLocation(program, "model");
-		glUniformMatrix4fv(location, 1, GL_TRUE, Matrix4D().getPointer());
+		glUniformMatrix4fv(location, 1, GL_TRUE, Matrix4D::getPositionMatrix(position).getPointer());
 
 		location = glGetUniformLocation(program, "color");
 		glUniform4fv(location, 1, color.GetPointer());
 
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
+		if (wireframe)
+		{
+			glDrawElements(GL_LINE_STRIP, indices.size(), GL_UNSIGNED_INT, NULL);
+		}
+		else
+		{
+			glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
+		}
 		glBindVertexArray(0);
 		glUseProgram(0);
 	}
 
 private:
 
+	bool wireframe;
 	Vector4D dimentions;
 };
 

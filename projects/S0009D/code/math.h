@@ -753,13 +753,35 @@ public:
 		return Matrix4D(1,0,0,inVector[0],
 						0,1,0,inVector[1],
 						0,0,1,inVector[2],
-						0,0,0,inVector[3]);
+						0,0,0,1);
 	}
-	static Matrix4D getRotationMatrix(const Vector4D& inVector)
+	static Matrix4D getRotationMatrix(const Vector4D& dir, const Vector4D up = Vector4D(0, 1, 0))
 	{
+		Vector4D xaxis = Vector4D::cross(up, dir);
+		xaxis.normalize();
+
+		Vector4D yaxis = Vector4D::cross(dir, xaxis);
+		yaxis.normalize();
+
+		float rot[16];
+
+		rot[0] = xaxis[0]; rot[1] = xaxis[1]; rot[2] = xaxis[2]; rot[3] = 0;
+		rot[4] = yaxis[0]; rot[5] = yaxis[1]; rot[6] = yaxis[2]; rot[7] = 0;
+		rot[8] = dir[0];   rot[9] = dir[1];   rot[10] = dir[2];  rot[11] = 0;
+		rot[12] = 0;       rot[13] = 0;       rot[14] = 0;       rot[15] = 1;
+
+		return Matrix4D(rot);
+		
+		
+		
+		
+		/*
 		if (inVector[0] == 0 && inVector[1] == 0 && inVector[2] == 1)
 			return Matrix4D();
 		
+
+
+
 		float rot[16];
 
 		Vector4D invertedZ = inVector;
@@ -794,13 +816,13 @@ public:
 		rot[15] = 1.0f;
 
 		return Matrix4D(rot);
-	}
+	*/}
 	static Matrix4D getScaleMatrix(const Vector4D& inVector)
 	{
 		return Matrix4D(inVector[0], 0, 0, 0,
 						0, inVector[1], 0, 0,
 						0, 0, inVector[2], 0,
-						0, 0, 0,           0);
+						0, 0, 0,           1);
 	}
 	static Matrix4D lookAt(Vector4D cameraPosition, Vector4D cameraTarget, Vector4D cameraUp) 
 	{

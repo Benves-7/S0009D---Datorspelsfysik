@@ -10,9 +10,10 @@
 #include "render/window.h"
 #include "Camera.h"
 #include "debug/debugManager.h"
+#include "MeshObject.h"
 
 #include "Ray.h"
-#include "Plane.h"
+#include "Square.h"
 
 #include <chrono>
 #include <vector>
@@ -57,7 +58,8 @@ namespace Example
 
 		Matrix4D perspectiveProjection;
 
-		vector<Plane> planes;
+		vector<Square> planes;
 		vector<Ray> rays;
+		vector<MeshObject> meshObjects;
 	};
 }
