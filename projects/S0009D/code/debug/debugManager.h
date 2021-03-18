@@ -41,7 +41,7 @@ public:
 	{
 		return addSafeShape(new DebugCube(pos, dim, wireframe, color));
 	}
-	int createSphere(Vector4D pos, float radius, Vector4D color = Vector4D(50, 20, 20))
+	int createSphere(Vector4D pos, float radius, Vector4D color = Vector4D(1, 0, 0))
 	{
 		return addShape(new DebugSphere(pos, radius, color));
 	}
