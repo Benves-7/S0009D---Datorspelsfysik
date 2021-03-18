@@ -7,7 +7,7 @@
 #include <cassert>
 
 #include "math.h"
-#include "AxisAlignedBoundingBox.h"
+#include "Square.h"
 
 #define assertm(exp, msg) assert(((void)msg, exp))
 
@@ -383,9 +383,9 @@ private:
 		AABB_planes.push_back(Square(Vector4D(AABB_position[0], AABB_position[1] + AABB_dimention[1]/2, AABB_position[2]), Vector2D(AABB_dimention[0], AABB_dimention[2]), Vector4D(0, 1, 0), true, Vector4D(0, 0, 1))); // top
 		AABB_planes.push_back(Square(Vector4D(AABB_position[0], AABB_position[1] - AABB_dimention[1]/2, AABB_position[2]), Vector2D(AABB_dimention[0], AABB_dimention[2]), Vector4D(0,-1, 0), true, Vector4D(0, 0, 1))); // bottom
 		AABB_planes.push_back(Square(Vector4D(AABB_position[0], AABB_position[1], AABB_position[2] + AABB_dimention[2]/2), Vector2D(AABB_dimention[0], AABB_dimention[1]), Vector4D(0, 0, 1), true, Vector4D(0, 0, 1))); // front
-		AABB_planes.push_back(Square(Vector4D(AABB_position[0], AABB_position[1], AABB_position[2] - AABB_dimention[2]/2), Vector2D(AABB_dimention[0], AABB_dimention[1]), Vector4D(0, 0, 1), true, Vector4D(0, 0, 1))); // back
-		AABB_planes.push_back(Square(Vector4D(AABB_position[0] - AABB_dimention[0]/2, AABB_position[1], AABB_position[2]), Vector2D(AABB_dimention[2], AABB_dimention[1]), Vector4D(1, 0, 0), true, Vector4D(0, 0, 1))); // left
-		AABB_planes.push_back(Square(Vector4D(AABB_position[0] + AABB_dimention[0]/2, AABB_position[1], AABB_position[2]), Vector2D(AABB_dimention[2], AABB_dimention[1]), Vector4D(-1, 0,0), true, Vector4D(0, 0, 1))); // right
+		AABB_planes.push_back(Square(Vector4D(AABB_position[0], AABB_position[1], AABB_position[2] - AABB_dimention[2]/2), Vector2D(AABB_dimention[0], AABB_dimention[1]), Vector4D(0, 0, -1), true, Vector4D(0, 0, 1))); // back
+		AABB_planes.push_back(Square(Vector4D(AABB_position[0] - AABB_dimention[0]/2, AABB_position[1], AABB_position[2]), Vector2D(AABB_dimention[2], AABB_dimention[1]), Vector4D(-1, 0, 0), true, Vector4D(0, 0, 1))); // left
+		AABB_planes.push_back(Square(Vector4D(AABB_position[0] + AABB_dimention[0]/2, AABB_position[1], AABB_position[2]), Vector2D(AABB_dimention[2], AABB_dimention[1]), Vector4D(1, 0,0), true, Vector4D(0, 0, 1))); // right
 	}
 
 
