@@ -58,7 +58,7 @@ namespace Example
 
 		Matrix4D perspectiveProjection;
 
-		vector<Square> planes;
+		vector<Square> squares;
 		vector<Ray> rays;
 		vector<MeshObject> meshObjects;
 	};

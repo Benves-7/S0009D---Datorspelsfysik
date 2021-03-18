@@ -77,9 +77,11 @@ namespace Example
 
 					
 					int t = selectedIndex;
-					selectedIndex = ray.checkHit(meshObjects);
+					selectedIndex = ray.bestHit(meshObjects);
 					if (selectedIndex == -1)
 						selectedIndex = t;
+
+					ray.bestHit(squares);
 				}
 			});
 		window->SetMouseMoveFunction([this](float64 xPos, float64 yPos)
@@ -173,12 +175,12 @@ namespace Example
 			);
 
 			/// TODO: !!
-			meshObjects.push_back(MeshObject("cat.obj", "texture2.jpg"/*, Vector4D(0,0,0), Vector4D(0,0,1), Vector4D(2,2,2)*/));
+			meshObjects.push_back(MeshObject("cat.obj", "texture2.jpg", Vector4D(0,0,0), Vector4D(0,0,1), Vector4D(1,1,1)));
 			//meshObjects.push_back(MeshObject("cat.obj", "texture2.jpg", Vector4D( 1,0,0)));
 			// setup AABB.
 			// make display functions.
 
-			//planes.push_back(Plane(Vector4D(0, 0.5f, -0.5f), Vector2D(1, 1), Vector4D(0, 0, 1)));
+			squares.push_back(Square(Vector4D(1, 0.5f, 0.0f), Vector2D(1, 1), Vector4D(0, 0, 1)));
 			//planes.push_back(Plane(Vector4D(0, 2, -2), Vector2D(1, 1), Vector4D(1, 0, 0)));
 
 
