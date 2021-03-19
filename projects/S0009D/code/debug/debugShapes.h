@@ -176,6 +176,27 @@ public:
 
 		setup();
 	}
+	DebugSquare(Vector4D pos, Vector2D dim, Vector4D dir)
+	{
+		position = pos;
+		direction = Vector4D::normalize(dir);
+		dimentions = Vector4D(dim[0], dim[1], 1, 1);
+		color = Vector4D(0,0,1);
+		wireframe = true;
+
+		float w = dim[0] / 2;
+		float h = dim[1] / 2;
+
+		vertices.push_back(w);  vertices.push_back(h);  vertices.push_back(0);
+		vertices.push_back(w);  vertices.push_back(-h); vertices.push_back(0);
+		vertices.push_back(-w); vertices.push_back(-h); vertices.push_back(0);
+		vertices.push_back(-w); vertices.push_back(h);  vertices.push_back(0);
+
+		indices.push_back(0); indices.push_back(1); indices.push_back(2);
+		indices.push_back(0); indices.push_back(3); indices.push_back(2);
+
+		setup();
+	}
 	~DebugSquare()
 	{
 

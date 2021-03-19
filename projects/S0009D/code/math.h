@@ -405,10 +405,6 @@ public:
 	{
 		cord[0] = x; cord[1] = y; cord[2] = z; cord[3] = w;
 	}
-	Vector4D(float arr[4])
-	{
-		cord[0] = arr[0]; cord[1] = arr[1]; cord[2] = arr[2]; cord[3] = arr[3];
-	}
 
 	/// Deconstructor
 	//====================================================================================================
@@ -435,7 +431,9 @@ public:
 
 	float length() const
 	{
-		return sqrt((cord[0] * cord[0]) + (cord[1] * cord[1]) + (cord[2] * cord[2]));
+		float v = (cord[0] * cord[0]) + (cord[1] * cord[1]) + (cord[2] * cord[2]);
+		v = (v != 0) ? v : 1.0f;
+		return sqrt(v);
 	}
 	static Vector4D normalize(Vector4D vec)
 	{
@@ -758,10 +756,10 @@ public:
 	static Matrix4D getRotationMatrix(const Vector4D& dir, const Vector4D up = Vector4D(0, 1, 0))
 	{
 		Vector4D xaxis = Vector4D::cross(up, dir);
-		xaxis.normalize();
+		//xaxis.normalize();
 
 		Vector4D yaxis = Vector4D::cross(dir, xaxis);
-		yaxis.normalize();
+		//yaxis.normalize();
 
 		float rot[16];
 
@@ -771,52 +769,19 @@ public:
 		rot[12] = 0;       rot[13] = 0;       rot[14] = 0;       rot[15] = 1;
 
 		return Matrix4D(rot);
-		
-		
-		
-		
-		/*
-		if (inVector[0] == 0 && inVector[1] == 0 && inVector[2] == 1)
-			return Matrix4D();
-		
+	}
+	static Matrix4D getRotationMatrixNew(const Vector4D dir)
+	{
+		float c1 = sqrt(dir[0] * dir[0] + dir[1] * dir[1]);
+		float s1 = dir[2];
+		float c2 = c1 ? dir[0] / c1 : 1.0f;
+		float s2 = c1 ? dir[1] / c1 : 0.0f;
 
-
-
-		float rot[16];
-
-		Vector4D invertedZ = inVector;
-		invertedZ[2] *= -1;
-		invertedZ.normalize();
-
-		Vector4D V = Vector4D::cross(Vector4D(0, 0, 1, 1), invertedZ);
-		V.normalize();
-
-		float phi = acos(Vector4D::dot(Vector4D(0, 0, 1, 1), invertedZ));
-		float rcos = cos(phi);
-		float rsin = sin(phi);
-
-		rot[0]  =		  rcos + V[0] * V[0] * (1.0f - rcos);
-		rot[1]  =  V[2] * rsin + V[1] * V[0] * (1.0f - rcos);
-		rot[2]  = -V[1] * rsin + V[2] * V[0] * (1.0f - rcos);
-		rot[3]  =  0.0f;
-
-		rot[4] = -V[2] * rsin + V[0] * V[1] * (1.0 - rcos);
-		rot[5] = 		 rcos + V[1] * V[1] * (1.0 - rcos);
-		rot[6] = -V[0] * rsin + V[2] * V[1] * (1.0 - rcos);
-		rot[7] = 0.0f;
-
-		rot[8] =   V[1] * rsin + V[0] * V[2] * (1.0 - rcos);
-		rot[9] =  -V[0] * rsin + V[1] * V[2] * (1.0 - rcos);
-		rot[10] = 		  rcos + V[2] * V[2] * (1.0 - rcos);
-		rot[11] = 0.0f;
-
-		rot[12] = 0.0f;
-		rot[13] = 0.0f;
-		rot[14] = 0.0f;
-		rot[15] = 1.0f;
-
-		return Matrix4D(rot);
-	*/}
+		return Matrix4D(dir[0], -s2, -s1 * c2, 0,
+						dir[1], c2, -s1 * s2, 0,
+						dir[2], 0, c1, 0,
+						0, 0, 0, 1);
+	}
 	static Matrix4D getScaleMatrix(const Vector4D& inVector)
 	{
 		return Matrix4D(inVector[0], 0, 0, 0,

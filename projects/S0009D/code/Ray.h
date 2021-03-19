@@ -66,7 +66,7 @@ public:
 		// check if intersection is inside the square.
 		if (pointInSquare(result.point, square))
 		{
-			DebugManager::getInstance().createSphere(result.point, 0.03, Vector4D(0,1,0));
+			//DebugManager::getInstance().createSphere(result.point, 0.03, Vector4D(0,1,0));
 			return result.distance;
 		}
 		return -1;
@@ -101,7 +101,8 @@ public:
 	float checkIfHitting(MeshObject object)
 	{
 		vector<IntersectData> temp;
-		int closest = numeric_limits<int>::infinity();
+		float closest = numeric_limits<float>::infinity();
+		int best = -1;
 		MeshInfo mi = object.getMeshInfo();
 		// Go through all the indicies in steps of threes.
 		for (int i = 0; i < mi.indices.size(); i += 3)
@@ -113,8 +114,9 @@ public:
 			n3[0] = mi.combinedBuffer[mi.indices[i+2]].normal[0]; n3[1] = mi.combinedBuffer[mi.indices[i+2]].normal[1]; n3[2] = mi.combinedBuffer[mi.indices[i+2]].normal[2];
 			// the planes normal will be the three normals added together and divided by three.
 			Vector4D nor = (n1+n2+n3) * (1.0f / 3.0f);
+			nor += object.getDirection(); // TODO: works, but not fully... (only rays from infront of the object works...
 			// move and rotate and scale the normal acording to the objects new position and rotation. the position and the scale is not needed, since it is only a direction. (however it seems worth having still)
-			nor = Matrix4D::getPositionMatrix(object.getPosition()) * Matrix4D::getRotationMatrix(object.getDirection()) * Matrix4D::getScaleMatrix(object.getScale()) * nor;
+			
 			if (Vector4D::dot(nor, direction) < 0)
 			{
 				// Step through the three vertices and extract the positions into Vector class.
@@ -125,6 +127,9 @@ public:
 				// the planes normal will be the three positions added together and divided by three.
 				Vector4D pos = (p1 + p2 + p3) * (1.0f / 3.0f);
 				// move and rotate and scale the position acording to the objects new position and rotation. a point in space so all the matrixes are needed.
+				p1 = Matrix4D::getPositionMatrix(object.getPosition()) * Matrix4D::getRotationMatrix(object.getDirection()) * Matrix4D::getScaleMatrix(object.getScale()) * p1;
+				p2 = Matrix4D::getPositionMatrix(object.getPosition()) * Matrix4D::getRotationMatrix(object.getDirection()) * Matrix4D::getScaleMatrix(object.getScale()) * p2;
+				p3 = Matrix4D::getPositionMatrix(object.getPosition()) * Matrix4D::getRotationMatrix(object.getDirection()) * Matrix4D::getScaleMatrix(object.getScale()) * p3;
 				pos = Matrix4D::getPositionMatrix(object.getPosition()) * Matrix4D::getRotationMatrix(object.getDirection()) * Matrix4D::getScaleMatrix(object.getScale()) * pos;
 
 				// Check if intersecting the plane
@@ -143,11 +148,15 @@ public:
 		for (int i = 0; i < temp.size(); i++)
 		{
 			// Find the closest match and return that distance.
-			DebugManager::getInstance().createSphere(temp[i].point, 0.005, Vector4D(0, 0, 1));
 			if (temp[i].distance < closest)
 			{
 				closest = temp[i].distance;
+				best = i;
 			}
+		}
+		if (best!=-1)
+		{
+			DebugManager::getInstance().createSphere(temp[best].point, 0.03, Vector4D(0,1,0));
 		}
 		return closest;
 	}

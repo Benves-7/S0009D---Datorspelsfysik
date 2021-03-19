@@ -1,6 +1,7 @@
 #pragma once
 #include "debugShapes.h"
 #include <vector>
+#include <map>
 
 class DebugManager
 {
@@ -10,11 +11,11 @@ public:
 		static DebugManager instance;
 		return instance;
 	}
-
 	~DebugManager()
 	{
 
 	}
+
 	void drawDebugShapes(Matrix4D viewMatrix)
 	{
 		if (!render)
@@ -26,6 +27,10 @@ public:
 		for (int i = 0; i < savedShapes.size(); i++)
 		{
 			savedShapes[i]->draw(viewMatrix);
+		}
+		for (auto itr = AABBs.begin(); itr != AABBs.end(); ++itr)
+		{
+			itr->second->draw(viewMatrix);
 		}
 	}
 
@@ -45,6 +50,10 @@ public:
 	{
 		return addShape(new DebugSphere(pos, radius, color));
 	}
+	int createAABBSquare(Vector4D pos, Vector2D dim, Vector4D dir)
+	{
+		return addAABB(new DebugSquare(pos, dim, dir));
+	}
 
 	int addShape(DebugBase* shape)
 	{
@@ -56,6 +65,27 @@ public:
 		savedShapes.push_back(std::shared_ptr<DebugBase>(shape));
 		return savedShapes.size() - 1;
 	}
+	int addAABB(DebugBase* shape)
+	{
+		int i = AABBs.size();
+		AABBs.insert(pair<int, shared_ptr<DebugBase>>(i, shape));
+		return i;
+	}
+
+	void removeShape(int index)
+	{
+		debugShapes.erase(debugShapes.begin() + index);
+	}
+	void removeSafeShape(int index)
+	{
+	}
+	void removeAABB(int index)
+	{
+		if (AABBs.count(index))
+		{
+			AABBs.erase(index);
+		}
+	}
 
 	shared_ptr<DebugBase> getSavedShape(int index)
 	{
@@ -66,6 +96,18 @@ public:
 		return debugShapes[index];
 	}
 
+	int getSavedShapesSize()
+	{
+		return savedShapes.size();
+	}
+	int getDebugShapesSize()
+	{
+		return debugShapes.size();
+	}
+	int getAABBsSize()
+	{
+		return AABBs.size();
+	}
 
 	void clear()
 	{
@@ -86,5 +128,6 @@ private:
 
 	std::vector<std::shared_ptr<DebugBase>> debugShapes;
 	std::vector<std::shared_ptr<DebugBase>> savedShapes;
+	std::map<int, shared_ptr<DebugBase>> AABBs;
 	bool render;
 };

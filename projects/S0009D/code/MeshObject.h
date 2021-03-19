@@ -66,7 +66,7 @@ public:
 		glUniformMatrix4fv(location, 1, GL_TRUE, viewMatrix.getPointer());
 
 		Matrix4D pos = Matrix4D::getPositionMatrix(position);
-		Matrix4D rot = Matrix4D::getRotationMatrix(Vector4D::normalize(direction));
+		Matrix4D rot = Matrix4D::getRotationMatrix(direction);
 		Matrix4D sca = Matrix4D::getScaleMatrix(scale);
 		Matrix4D model = pos * rot * sca;
 
@@ -88,7 +88,7 @@ public:
 
 	vector<Square> getAABB()
 	{
-		return AABB_planes;
+		return AABB_squares;
 	}
 
 	Vector4D getPosition()
@@ -98,6 +98,7 @@ public:
 	void setPosition(Vector4D pos)
 	{
 		position = pos;
+		updateAABB();
 	}
 
 	Vector4D getDirection()
@@ -107,6 +108,7 @@ public:
 	void setDirection(Vector4D dir)
 	{
 		direction = dir;
+		updateAABB();
 	}
 
 	Vector4D getScale()
@@ -116,11 +118,21 @@ public:
 	void setScale(Vector4D sca)
 	{
 		scale = sca;
+		updateAABB();
 	}
 
 	MeshInfo getMeshInfo()
 	{
 		return meshInfo;
+	}
+
+	Vector4D getAABBDimention()
+	{
+		return AABB_dimention;
+	}
+	Vector4D getAABBPosition()
+	{
+		return AABB_position;
 	}
 
 private:
@@ -351,9 +363,10 @@ private:
 	// AxisAlignedBoundingBox variables.
 	void makeAABB()
 	{
-		for (int i = 0; i < meshInfo.vertices.size(); i++)
+		for (int i = 0; i < meshInfo.combinedBuffer.size(); i++)
 		{
-			Vector4D temp_vec = Matrix4D::getPositionMatrix(position) * Matrix4D::getRotationMatrix(direction) * Matrix4D::getScaleMatrix(scale) * meshInfo.vertices[i];
+			float* t = meshInfo.combinedBuffer[i].pos;
+			Vector4D temp_vec = Matrix4D::getPositionMatrix(position) * Matrix4D::getRotationMatrix(direction) * Matrix4D::getScaleMatrix(scale) * Vector4D(t[0], t[1], t[2]);
 
 			if (temp_vec[0] > maxPoint[0])
 				maxPoint[0] = temp_vec[0];
@@ -374,25 +387,37 @@ private:
 				minPoint[2] = temp_vec[2];
 		}
 
-		maxPoint += position;
-		minPoint += position;
-
 		AABB_dimention = Vector4D(maxPoint[0] - minPoint[0], maxPoint[1] - minPoint[1], maxPoint[2] - minPoint[2], 1);
 		AABB_position = Vector4D((minPoint[0] + (AABB_dimention[0] / 2)), (minPoint[1] + (AABB_dimention[1] / 2)), (minPoint[2] + (AABB_dimention[2] / 2)));
 
-		AABB_planes.push_back(Square(Vector4D(AABB_position[0], AABB_position[1] + AABB_dimention[1]/2, AABB_position[2]), Vector2D(AABB_dimention[0], AABB_dimention[2]), Vector4D(0, 1, 0), true, Vector4D(0, 0, 1))); // top
-		AABB_planes.push_back(Square(Vector4D(AABB_position[0], AABB_position[1] - AABB_dimention[1]/2, AABB_position[2]), Vector2D(AABB_dimention[0], AABB_dimention[2]), Vector4D(0,-1, 0), true, Vector4D(0, 0, 1))); // bottom
-		AABB_planes.push_back(Square(Vector4D(AABB_position[0], AABB_position[1], AABB_position[2] + AABB_dimention[2]/2), Vector2D(AABB_dimention[0], AABB_dimention[1]), Vector4D(0, 0, 1), true, Vector4D(0, 0, 1))); // front
-		AABB_planes.push_back(Square(Vector4D(AABB_position[0], AABB_position[1], AABB_position[2] - AABB_dimention[2]/2), Vector2D(AABB_dimention[0], AABB_dimention[1]), Vector4D(0, 0, -1), true, Vector4D(0, 0, 1))); // back
-		AABB_planes.push_back(Square(Vector4D(AABB_position[0] - AABB_dimention[0]/2, AABB_position[1], AABB_position[2]), Vector2D(AABB_dimention[2], AABB_dimention[1]), Vector4D(-1, 0, 0), true, Vector4D(0, 0, 1))); // left
-		AABB_planes.push_back(Square(Vector4D(AABB_position[0] + AABB_dimention[0]/2, AABB_position[1], AABB_position[2]), Vector2D(AABB_dimention[2], AABB_dimention[1]), Vector4D(1, 0,0), true, Vector4D(0, 0, 1))); // right
-	}
 
+		AABB_squares.push_back(Square(Vector4D(AABB_position[0], AABB_position[1] + AABB_dimention[1]/2, AABB_position[2]), Vector2D(AABB_dimention[0], AABB_dimention[2]), Vector4D(0, 1, 0), true)); // top
+		AABB_squares.push_back(Square(Vector4D(AABB_position[0], AABB_position[1] - AABB_dimention[1]/2, AABB_position[2]), Vector2D(AABB_dimention[0], AABB_dimention[2]), Vector4D(0,-1, 0), true)); // bottom
+		AABB_squares.push_back(Square(Vector4D(AABB_position[0], AABB_position[1], AABB_position[2] + AABB_dimention[2]/2), Vector2D(AABB_dimention[0], AABB_dimention[1]), Vector4D(0, 0, 1), true)); // front
+		AABB_squares.push_back(Square(Vector4D(AABB_position[0], AABB_position[1], AABB_position[2] - AABB_dimention[2]/2), Vector2D(AABB_dimention[0], AABB_dimention[1]), Vector4D(0, 0,-1), true)); // back
+		AABB_squares.push_back(Square(Vector4D(AABB_position[0] - AABB_dimention[0]/2, AABB_position[1], AABB_position[2]), Vector2D(AABB_dimention[2], AABB_dimention[1]), Vector4D(-1, 0,0), true)); // left
+		AABB_squares.push_back(Square(Vector4D(AABB_position[0] + AABB_dimention[0]/2, AABB_position[1], AABB_position[2]), Vector2D(AABB_dimention[2], AABB_dimention[1]), Vector4D(1, 0, 0), true)); // right
+	}
+	void updateAABB()
+	{
+		clearAABB();
+		makeAABB();
+	}
+	void clearAABB()
+	{
+		for (int i = 0; i < AABB_squares.size(); i++)
+		{
+			int index = AABB_squares[i].getDebugIndex();
+			DebugManager::getInstance().removeAABB(index);
+		}
+		maxPoint = Vector4D(-99999, -99999, -99999);
+		minPoint = Vector4D(99999, 99999, 99999);
+		AABB_squares.clear();
+	}
 
 	Vector4D maxPoint = Vector4D(-99999, -99999, -99999);
 	Vector4D minPoint = Vector4D(99999, 99999, 99999);
 
 	Vector4D AABB_dimention, AABB_position;
-	vector<Square> AABB_planes; //top, bottom, front, back, left, right
-
+	vector<Square> AABB_squares; //top, bottom, front, back, left, right
 };

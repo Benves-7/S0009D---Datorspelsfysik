@@ -9,7 +9,7 @@ public:
 	{
 
 	}
-	Square(Vector4D pos, Vector2D dim, Vector4D dir, bool wireframe = false, Vector4D col = Vector4D(1, 1, 1))
+	Square(Vector4D pos, Vector2D dim, Vector4D dir, Vector4D col = Vector4D(1, 1, 1), bool wireframe = false)
 	{
 		float w = dim[0] / 2;
 		float h = dim[1] / 2;
@@ -25,6 +25,23 @@ public:
 
 		debugIndex = DebugManager::getInstance().createSquare(pos, dim, dir, wireframe, col);
 	}
+	Square(Vector4D pos, Vector2D dim, Vector4D dir, bool AABB)
+	{
+		float w = dim[0] / 2;
+		float h = dim[1] / 2;
+		position = pos;
+		color = Vector4D(0,0,1);
+		dimentions = dim;
+		normal = Vector4D::normalize(dir);
+
+		p1 = Matrix4D::getPositionMatrix(pos) * Matrix4D::getRotationMatrix(dir) * Vector4D(w, h);
+		p2 = Matrix4D::getPositionMatrix(pos) * Matrix4D::getRotationMatrix(dir) * Vector4D(w, -h);
+		p3 = Matrix4D::getPositionMatrix(pos) * Matrix4D::getRotationMatrix(dir) * Vector4D(-w, -h);
+		p4 = Matrix4D::getPositionMatrix(pos) * Matrix4D::getRotationMatrix(dir) * Vector4D(-w, h);
+
+		debugIndex = DebugManager::getInstance().createAABBSquare(pos, dim, dir);
+	}
+
 	~Square()
 	{
 
@@ -64,6 +81,11 @@ public:
 	Vector4D* getColor()
 	{
 		return DebugManager::getInstance().getSavedShape(debugIndex)->getColor();
+	}
+
+	int getDebugIndex()
+	{
+		return debugIndex;
 	}
 
 	Vector4D getPoint(Vector4D point)

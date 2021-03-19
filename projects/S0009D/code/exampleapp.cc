@@ -17,10 +17,13 @@ namespace Example
 	Matrix4D view;
 	Matrix4D lookAt;
 
+	bool show = true;
+	bool imguiSize = true;
+
 	Vector4D* colorpick = new Vector4D();
 	int selectedIndex = -1;
 
-	Vector4D cameraPos = Vector4D(0.0f, 0.0f, 2.0f, 1);
+	Vector4D cameraPos = Vector4D(0.0f, 0.0f, 5.0f, 1);
 	Vector4D cameraFront = Vector4D(0.0f, 0.0f, -1.0f, 1);
 	Vector4D cameraUp = Vector4D(0.0f, 1.0f, 0.0f, 1);
 
@@ -80,8 +83,6 @@ namespace Example
 					selectedIndex = ray.bestHit(meshObjects);
 					if (selectedIndex == -1)
 						selectedIndex = t;
-
-					ray.bestHit(squares);
 				}
 			});
 		window->SetMouseMoveFunction([this](float64 xPos, float64 yPos)
@@ -175,12 +176,12 @@ namespace Example
 			);
 
 			/// TODO: !!
-			meshObjects.push_back(MeshObject("cat.obj", "texture2.jpg", Vector4D(0,0,0), Vector4D(0,0,1), Vector4D(1,1,1)));
+			meshObjects.push_back(MeshObject("cat.obj", "texture2.jpg", Vector4D(3,0,0), Vector4D(0,0,1), Vector4D(1,1,1)));
 			//meshObjects.push_back(MeshObject("cat.obj", "texture2.jpg", Vector4D( 1,0,0)));
 			// setup AABB.
 			// make display functions.
 
-			squares.push_back(Square(Vector4D(1, 0.5f, 0.0f), Vector2D(1, 1), Vector4D(0, 0, 1)));
+			//squares.push_back(Square(Vector4D(1, 0.5f, 0.0f), Vector2D(1, 1), Vector4D(0, 0, 1)));
 			//planes.push_back(Plane(Vector4D(0, 2, -2), Vector2D(1, 1), Vector4D(1, 0, 0)));
 
 
@@ -198,12 +199,34 @@ namespace Example
 	{
 		if (this->window->IsOpen())
 		{
-			bool show = true;
-			ImGui::SetNextWindowSize(ImVec2(150, 400));
+			if (imguiSize)
+			{
+				ImGui::SetNextWindowSize(ImVec2(250, 400));
+				imguiSize = false;
+			}
+
 			ImGui::Begin("Debug UI", &show);
 
 			ImGui::Checkbox("render", DebugManager::getInstance().bRender());
 
+			if (ImGui::CollapsingHeader("Debug Info", false))
+			{
+				int AABBSize = DebugManager::getInstance().getAABBsSize();
+				ImGui::Text("savedShapes size: %i", AABBSize);
+
+				float* dim = meshObjects[0].getAABBDimention().GetPointer();
+				ImGui::Text("dimentions: x: %.2f y: %.2f z: %.2f", dim[0], dim[1], dim[2]);
+
+				float* pos1 = meshObjects[0].getAABBPosition().GetPointer();
+				ImGui::Text("AABB positions: x: %.2f y: %.2f z: %.2f", pos1[0], pos1[1], pos1[2]);	
+
+				float* pos2 = meshObjects[0].getPosition().GetPointer();
+				ImGui::Text("Obj  positions: x: %.2f y: %.2f z: %.2f", pos2[0], pos2[1], pos2[2]);
+			}
+
+			ImGui::Spacing();
+			ImGui::Spacing();
+			ImGui::Spacing();
 			ImGui::Text("rays: %i", rays.size());
 			ImGui::Text("objects: %i", meshObjects.size());
 			ImGui::Text("AABBs: %i");
